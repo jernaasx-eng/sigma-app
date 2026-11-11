@@ -3012,12 +3012,13 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         <summary>البائع</summary>
         <div class="fields">
           <div class="f">البائع في هذه الصفقة
-            <div class="seg" role="radiogroup">
-              <label><input type="radio" name="seller" id="seller-sigma" value="sigma">سيجما للسيارات</label>
-              <label><input type="radio" name="seller" id="seller-agomer" value="agomer">AGOMER Trading</label>
-            </div>
+            <div class="seg" role="radiogroup" id="sellerSeg" style="flex-wrap:wrap"></div>
           </div>
-          <p class="hint">لكل بائع اسمه وسجله وشعاره وختمه وتوقيعه ولونه. أرقام المستندات مشتركة بين البائعين.</p>
+          <div class="ai-row">
+            <button id="sellerAdd" class="btn sm" type="button">+ بائع إضافي</button>
+            <button id="sellerDel" class="btn sm" type="button" hidden>حذف هذا البائع</button>
+          </div>
+          <p class="hint">لكل بائع إعداداته المحفوظة: الاسم والسجل والعنوان، الشعار والختم والتوقيع، اللون، الورق الرسمي، بيانات البنك وعبارة الختام. عند اختيار البائع تتبدل كلها معه. أرقام المستندات مشتركة بين البائعين.</p>
           <label class="f">الاسم بالعربي <input id="coNameAr" data-bind="company.nameAr" dir="rtl"></label>
           <label class="f">الاسم بالإنجليزي <input id="coNameEn" data-bind="company.nameEn" dir="ltr"></label>
           <div class="row2">
@@ -3035,7 +3036,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
               <input id="logoFile" type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp">
               <button id="logoRemove" class="btn" type="button">إزالة</button>
             </div>
-            <p class="hint">ارفع شعار سيجما بصيغة SVG أو PNG عالي الدقة بخلفية شفافة. بدون شعار يظهر رمز Σ.</p>
+            <p class="hint">ارفع شعار البائع المختار بصيغة SVG أو PNG عالي الدقة بخلفية شفافة. بدون شعار يظهر رمز بديل.</p>
             <p id="logoWarn" class="ai-warn" hidden></p>
           </div>
           <div class="f">ختم البائع
@@ -3056,12 +3057,12 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
           <label class="f">الورق الرسمي (الليتر هيد)
             <select id="lhMode" data-bind="lhMode"><option value="official">في العقود والرسائل الرسمية فقط</option><option value="all">في كل المستندات</option><option value="off">بدون ورق رسمي</option></select>
           </label>
-          <div class="f">تغيير صورة الورق الرسمي (اختياري)
+          <div class="f">ملف الورق الرسمي لهذا البائع
             <div class="logo-row">
-              <input id="lhFile" type="file" accept="image/png,image/jpeg,image/webp">
-              <button id="lhRemove" class="btn" type="button">استعادة الأصلي</button>
+              <input id="lhFile" type="file" accept="image/png,image/jpeg,image/webp,application/pdf,.pdf">
+              <button id="lhRemove" class="btn" type="button">إزالة</button>
             </div>
-            <p class="hint">ورق سيجما الرسمي مثبّت في النظام. ارفع صورة صفحة A4 كاملة فقط إذا أردت استبداله، أو لإضافة ورق رسمي للبائع الثاني.</p>
+            <p class="hint lhState"></p>
           </div>
           <p class="hint">صوّر الختم والتوقيع على ورق أبيض بإضاءة جيدة، أو استخدم PNG بخلفية شفافة. الخلفية البيضاء تُزال تلقائياً عند الرفع. يظهران في خانة توقيع البائع: الفاتورة، والمحاسب والختم في سند القبض، والمُسلِّم في سند الاستلام.</p>
           <button id="sigmaReset" class="btn sm" type="button">استعادة بيانات سيجما الأصلية</button>
@@ -3236,6 +3237,23 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
           <label class="f">بنود العقد لهذا النوع من المركبات (كل سطر بند) <textarea id="ctClauses" dir="rtl" rows="9"></textarea></label>
           <button id="ctReset" class="btn sm" type="button">استعادة البنود الافتراضية لهذا النوع</button>
           <p class="hint">النموذج مبني على عقدك المرفق. البنود تتغيّر تلقائياً حسب نوع المركبة (جديدة، مستعملة، شاحنة). يُنصح بمراجعة الصيغة النهائية مع محامٍ.</p>
+        </div>
+      </details>
+
+      <details open data-docs="contract transfer letter">
+        <summary>الورق الرسمي (الليتر هيد)</summary>
+        <div class="fields">
+          <p class="hint">البائع الحالي: <b id="lhSellerName"></b>. لكل بائع ورقه الرسمي الخاص، ويتبدل تلقائياً عند تغيير البائع.</p>
+          <div class="f">ملف الليتر هيد لهذا البائع (صورة أو PDF لصفحة A4 كاملة)
+            <div class="logo-row">
+              <input id="lhFile2" type="file" accept="image/png,image/jpeg,image/webp,application/pdf,.pdf">
+              <button id="lhRemove2" class="btn" type="button">إزالة</button>
+            </div>
+            <p class="hint lhState"></p>
+          </div>
+          <label class="f">أين يظهر الورق الرسمي
+            <select id="lhMode2" data-bind="lhMode"><option value="official">في العقود والرسائل الرسمية فقط</option><option value="all">في كل المستندات</option><option value="off">بدون ورق رسمي</option></select>
+          </label>
         </div>
       </details>
 
@@ -3561,6 +3579,15 @@ if(!S||!S.nums||!Array.isArray(S.items))S=null;
 let SEED=null;try{const el=document.getElementById('seed');if(el)SEED=JSON.parse(el.textContent)}catch(e){SEED=null}
 if(SEED&&SEED.nums&&(!S||(SEED.ts||0)>(S.ts||0)))S=SEED;
 if(!S)S=demo();
+const SELLER_KEEP=['bank','thanks','lhMode','theme'];
+// what belongs to the seller travels with the seller: mirrored into the profile on every save, loaded back on switch
+function sellerStore(){const c=S.company;if(!c)return;SELLER_KEEP.forEach(k=>{c[k]=S[k]});if(c.custom)c.mark=String(c.nameEn||c.nameAr||'•').trim().charAt(0)||'•'}
+function sellerLoad(){const c=S.company;if(!c)return;const d=demo();
+  S.bank=c.bank!==undefined?c.bank:(S.seller==='sigma'?d.bank:'');
+  S.thanks=c.thanks!==undefined?c.thanks:(S.seller==='sigma'?d.thanks:'شكراً لتعاملكم معنا — Thank you for your business');
+  S.lhMode=c.lhMode||'official';if(c.theme!=null)S.theme=c.theme}
+function blankSeller(){return{legal:'',nameAr:'',nameEn:'',cr:'',vat:'',address:'',phone:'',email:'',ig:'',logo:'',stamp:'',signature:'',letterhead:'',mark:'•',custom:true,theme:0}}
+function sellerLabel(id){const c=S.sellers[id]||{};return c.nameAr||c.nameEn||(id==='agomer'?'AGOMER Trading':'بائع جديد')}
 function migrate(){const d=demo();
   for(const k of Object.keys(d))if(S[k]===undefined)S[k]=d[k];
   if(!S.sellers||typeof S.sellers!=='object')S.sellers={sigma:Object.assign(sigma(),S.company||{}),agomer:agomer()};
@@ -3593,6 +3620,7 @@ if(S!==SEED){const t=isoDate(0);if(S.date!==t){S.date=t;if(S.due&&S.due<t)S.due=
 
 let saveT;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S,(k,v)=>k==='company'?undefined:v))}catch(e){}
+  sellerStore();
   const cs=JSON.stringify(cfgData());if(lastCfg===null)lastCfg=cs;else if(cs!==lastCfg){lastCfg=cs;try{localStorage.setItem('sigma-cfg-ts',String(Date.now()))}catch(e){}markDirty('cfg','main')}
   if(S.dealId||S.client.name||S.veh.make||S.veh.vin){uniqueNums();storeDeal(false);autoSold()}
   renderDeals();renderLog();},300)}
@@ -4199,7 +4227,7 @@ const VIEWER_URL='https://claude.ai/artifact/R59k22q4Ut5RhjT7DmfVvy';
 function prune(o){const r={};for(const k in o){const v=o[k];if(v===''||v==null||v===false||v===0)continue;if(Array.isArray(v)&&!v.length)continue;r[k]=v}return r}
 function pick(o,keys){const r={};keys.forEach(k=>{if(o[k])r[k]=o[k]});return r}
 function sharePayload(){
-  const d=S.doc,D0=demo(),base=S.seller==='agomer'?agomer():sigma(),co={};
+  const d=S.doc,D0=demo(),base=S.seller==='sigma'?sigma():agomer(),co={};
   ['nameAr','nameEn','legal','cr','vat','address','phone','email','ig','mark'].forEach(k=>{if((S.company[k]||'')!==(base[k]||''))co[k]=S.company[k]||''});
   const vh=prune(S.veh),vd=[];delete vh.invId;
   [['warranty',VDEF.warranty],['extras',VDEF.extras],['condition',S.veh.kind==='truck'?VDEF.condTruck:VDEF.condUsed]].forEach(([k,v])=>{if(vh[k]===v){delete vh[k];vd.push(k)}});
@@ -4266,6 +4294,7 @@ function render(){
   const keepLang=S.lang;if(S.doc==='contract'||S.doc==='transfer'||S.doc==='letter')S.lang='ar';
   try{renderInner()}finally{S.lang=keepLang}
   fitNames();paginate();syncLetterEd();
+  const sl=document.querySelector('#sellerSeg input:checked');if(sl&&sl.parentNode.lastChild.nodeValue!==sellerLabel(S.seller))sl.parentNode.lastChild.nodeValue=sellerLabel(S.seller);
 }
 // letterhead mode: move whatever does not fit between the header and footer zones onto following pages
 function splitAt(node,lim,top){
@@ -4413,8 +4442,9 @@ function fillEditor(){
   ed.querySelectorAll('input[name=rcm]').forEach(r=>r.checked=r.value===S.rc.method);
   document.getElementById('vehOn').checked=!!S.vehOn;
   document.getElementById('autoLink').checked=!!S.autoLink;
-  ed.querySelectorAll('input[name=seller]').forEach(r=>r.checked=r.value===S.seller);
-  document.getElementById('sigmaReset').hidden=S.seller!=='sigma';
+  document.getElementById('sellerSeg').innerHTML=Object.keys(S.sellers).map(id=>'<label><input type="radio" name="seller" value="'+esc(id)+'"'+(id===S.seller?' checked':'')+'>'+esc(sellerLabel(id))+'</label>').join('');
+  document.getElementById('sellerDel').hidden=!(S.company&&S.company.custom);
+  document.getElementById('sigmaReset').hidden=S.seller!=='sigma';lhUi();
   document.getElementById('qrOn').checked=S.qrOn!==false;
   document.getElementById('trOn').checked=!!S.trade.on;
   ed.querySelectorAll('input[name=plan]').forEach(r=>r.checked=r.value===(S.plan.type||'none'));
@@ -4477,7 +4507,7 @@ ed.addEventListener('input',e=>{
   else if(el.id==='sealOn'){S.sealOn=el.checked}
   else if(el.name==='lang'){S.lang=el.value}
   else if(el.name==='theme'){S.theme=+el.value;S.company.theme=S.theme}
-  else if(el.name==='seller'){S.seller=el.value;S.company=S.sellers[el.value];if(S.company.theme!=null)S.theme=S.company.theme;fillEditor()}
+  else if(el.name==='seller'){sellerStore();S.seller=el.value;S.company=S.sellers[el.value];sellerLoad();fillEditor()}
   else if(el.id==='qrOn'){S.qrOn=el.checked}
   else if(el.id==='shareText'){shareEdited=true;updateShareLinks();return}
   else if(el.name==='ctype'){S.client.type=el.value;syncVisibility()}
@@ -4544,14 +4574,39 @@ document.getElementById('puToInv').addEventListener('click',()=>{
   else{const x=newInvFromVeh(v);x.cost=amt;x.price=0;x.notes=src;x.saved=Date.now();putInv(x);note.textContent='أُضيفت المركبة إلى المخزون بتكلفة '+num(amt)+'. حدّد سعر البيع من صفحة المخزون.'}
   renderInv();
 });
-document.getElementById('lhFile').addEventListener('change',e=>{
-  const f=e.target.files&&e.target.files[0];if(!f)return;
-  const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{
+function lhUi(){
+  const c=S.company||{},own=!!c.letterhead,builtin=!own&&S.seller==='sigma'&&!!window.LH_SIGMA;
+  const t=own?'تم رفع ورق رسمي خاص بهذا البائع.':builtin?'يُستخدم ورق سيجما الرسمي المثبّت في النظام. ارفع ملفاً فقط إذا أردت استبداله.':'لا يوجد ورق رسمي لهذا البائع بعد. ارفع ملفه ليظهر في العقود والرسائل، وبدونه تظهر الترويسة العادية.';
+  document.querySelectorAll('.lhState').forEach(el=>{el.textContent=t});
+  ['lhRemove','lhRemove2'].forEach(id=>{const b=document.getElementById(id);if(b){b.hidden=!own;b.textContent=S.seller==='sigma'?'استعادة ورق سيجما الأصلي':'إزالة'}});
+  const n=document.getElementById('lhSellerName');if(n)n.textContent=sellerLabel(S.seller);
+}
+async function setLetterhead(f,inp){
+  const say=t=>document.querySelectorAll('.lhState').forEach(el=>{el.textContent=t});
+  try{
+    let src=f;
+    if(f.type==='application/pdf'||/\.pdf$/i.test(f.name)){say('جارٍ تحويل ملف PDF...');
+      const lib=await loadPdfJs(),pdf=await lib.getDocument({data:await f.arrayBuffer()}).promise,pg=await pdf.getPage(1);
+      const v0=pg.getViewport({scale:1}),vp=pg.getViewport({scale:Math.min(5,2480/v0.width)}),cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+      await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;src=await new Promise(r=>cv.toBlob(r,'image/png'))}
+    const url=URL.createObjectURL(src),im=new Image();await new Promise((res,rej)=>{im.onload=res;im.onerror=rej;im.src=url});
     const k=Math.min(1,2480/im.width),cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);
-    const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.drawImage(im,0,0,cv.width,cv.height);
-    S.company.letterhead=cv.toDataURL('image/jpeg',.88);render();save()};im.src=r.result};r.readAsDataURL(f);
+    const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.drawImage(im,0,0,cv.width,cv.height);URL.revokeObjectURL(url);
+    S.company.letterhead=cv.toDataURL('image/jpeg',.88);render();save();lhUi();
+    const r=im.height/im.width;if(r<1.3||r>1.5)say('تم الرفع، لكن مقاس الصورة ليس A4 طولي وقد تظهر ممطوطة. ارفع صفحة A4 كاملة.');
+  }catch(e){say('تعذّر قراءة الملف. ارفع صورة PNG أو JPG، أو ملف PDF من صفحة واحدة.')}
+  if(inp)inp.value='';
+}
+['lhFile','lhFile2'].forEach(id=>document.getElementById(id).addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(f)setLetterhead(f,e.target)}));
+['lhRemove','lhRemove2'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{S.company.letterhead='';render();save();lhUi()}));
+document.getElementById('sellerAdd').addEventListener('click',()=>{
+  sellerStore();const id='x'+Date.now().toString(36);S.sellers[id]=blankSeller();S.seller=id;S.company=S.sellers[id];sellerLoad();fillEditor();render();save();
+  const n=document.getElementById('coNameAr');if(n)n.focus();
 });
-document.getElementById('lhRemove').addEventListener('click',()=>{S.company.letterhead='';document.getElementById('lhFile').value='';render();save()});
+document.getElementById('sellerDel').addEventListener('click',()=>{
+  const id=S.seller;if(!S.sellers[id]||!S.sellers[id].custom)return;
+  ask('حذف البائع «'+sellerLabel(id)+'» وكل إعداداته؟ الصفقات السابقة باسمه تبقى في السجل وتُعرض ببيانات سيجما.',()=>{delete S.sellers[id];S.seller='sigma';S.company=S.sellers.sigma;sellerLoad()});
+});
 // a raster logo smaller than ~900px looks soft in the PDF: say so
 function checkLogo(){
   const w=document.getElementById('logoWarn'),src=S.company&&S.company.logo;w.hidden=true;
@@ -5038,7 +5093,7 @@ function renderLog(){
 ['logMonth','logStatus'].forEach(id=>document.getElementById(id).addEventListener('change',renderLog));
 document.getElementById('logSearch').addEventListener('input',renderLog);
 function openDeal(id){const rec=STORE.deals.find(x=>x.id===id);if(!rec)return;if(S.dealId&&S.dealId!==id)storeDeal(false);
-  S.numFor=null;Object.assign(S,JSON.parse(JSON.stringify(rec.data)));S.dealId=rec.id;migrate();fillEditor();render();save();setView('docs')}
+  S.numFor=null;Object.assign(S,JSON.parse(JSON.stringify(rec.data)));S.dealId=rec.id;migrate();if(S.company.theme!=null)S.theme=S.company.theme;if(S.company.lhMode)S.lhMode=S.company.lhMode;if(S.company.thanks!==undefined)S.thanks=S.company.thanks;fillEditor();render();save();setView('docs')}
 document.getElementById('logTable').addEventListener('click',e=>{const b=e.target.closest('[data-lopen]');if(b)openDeal(b.dataset.lopen)});
 
 /* ---------- printable report of the rows currently shown in the log ---------- */
@@ -5275,7 +5330,7 @@ async function syncNow(manual){
       if(!o||recTs(r)>recTs(o)){upsert(STORE[c],r);ch=true;if(c==='deals'&&r.id===S.dealId)cur=r}}));
     (j.del||[]).forEach(d=>{if(d.c!=='deals'&&d.c!=='inv')return;const n=STORE[d.c].length;STORE[d.c]=STORE[d.c].filter(x=>!(x.id===d.id&&recTs(x)<=d.ts));if(STORE[d.c].length!==n)ch=true});
     const cf=(j.cfg||[])[0];
-    if(cf&&cf.data&&cf.data.sellers&&(cf.saved||0)>cfgTs()&&!SQ.cfg.main){S.sellers=cf.data.sellers;if(cf.data.lhMode)S.lhMode=cf.data.lhMode;lsSet('sigma-cfg-ts',String(cf.saved));migrate();lastCfg=JSON.stringify(cfgData());cfgCh=true}
+    if(cf&&cf.data&&cf.data.sellers&&(cf.saved||0)>cfgTs()&&!SQ.cfg.main){S.sellers=cf.data.sellers;lsSet('sigma-cfg-ts',String(cf.saved));migrate();sellerLoad();lastCfg=JSON.stringify(cfgData());cfgCh=true}
     sqSave();lsSet('sigma-sync-last',String(j.now||Date.now()));
     if(ch){['deals','inv'].forEach(c=>STORE[c].sort((a,b)=>recTs(b)-recTs(a)));persistLocal()}
     if(cur){Object.assign(S,JSON.parse(JSON.stringify(cur.data)));migrate()}
@@ -5373,7 +5428,7 @@ if(window.__VIEWER__){
     const body=code.replace(/^v1\.?/,'');
     unpackPayload(body).then(P=>{paper.hidden=false;
     const d=demo();S=d;S.doc=P.doc;S.lang=P.lang||'ar';S.currency=P.cur||'OMR';S.vatRate=P.vat||0;S.theme=P.th||0;S.date=P.date||'';
-    S.seller=P.sel||'sigma';S.sellers={sigma:sigma(),agomer:agomer()};S.sellers[S.seller]=Object.assign({},S.sellers[S.seller],{logo:'',stamp:'',signature:''},P.co||{});
+    S.seller=P.sel||'sigma';S.sellers={sigma:sigma(),agomer:agomer()};if(!S.sellers[S.seller])S.sellers[S.seller]=blankSeller();S.sellers[S.seller]=Object.assign({},S.sellers[S.seller],{logo:'',stamp:'',signature:''},P.co||{});
     S.nums[P.doc]=P.no||'';S.client=Object.assign({type:'individual',name:'',nameEn:'',cr:'',idNo:'',address:'',vat:'',phone:''},P.cl||{});
     S.veh=Object.assign(emptyVeh((P.vh||{}).kind),P.vh||{});S.vehOn=!!P.vo;
     (P.vd||[]).forEach(k=>{S.veh[k]=k==='warranty'?VDEF.warranty:k==='extras'?VDEF.extras:(S.veh.kind==='truck'?VDEF.condTruck:VDEF.condUsed)});
