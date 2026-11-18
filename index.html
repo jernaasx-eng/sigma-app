@@ -3297,6 +3297,10 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
 
       <details open data-docs="contract">
         <summary>بيانات العقد</summary>
+        <div class="fields" data-free style="padding-bottom:0">
+          <button id="ctBlank" class="btn sm" type="button">طباعة نسخة فارغة للتعبئة اليدوية</button>
+          <p class="hint">نموذج العقد حسب نوع المركبة المختار (جديدة / مستعملة / شاحنة) ببيانات البائع فقط، وكل الخانات الأخرى فارغة للتعبئة بالقلم.</p>
+        </div>
         <div class="fields">
           <p class="hint" id="ctKindHint"></p>
           <div class="row2">
@@ -3713,7 +3717,7 @@ lastCfg=JSON.stringify(cfgData());
 if(S!==SEED){const t=isoDate(0);if(S.date!==t){S.date=t;if(S.due&&S.due<t)S.due=''}}
 
 let saveT;
-function save(){clearTimeout(saveT);saveT=setTimeout(()=>{S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S,(k,v)=>k==='company'?undefined:v))}catch(e){}
+function save(){if(BLANKF)return;clearTimeout(saveT);saveT=setTimeout(()=>{S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S,(k,v)=>k==='company'?undefined:v))}catch(e){}
   sellerStore();
   const cs=JSON.stringify(cfgData());if(lastCfg===null)lastCfg=cs;else if(cs!==lastCfg){lastCfg=cs;try{localStorage.setItem('sigma-cfg-ts',String(Date.now()))}catch(e){}markDirty('cfg','main')}
   if(S.dealId||S.client.name||S.veh.make||S.veh.vin){uniqueNums();storeDeal(false);autoSold()}
@@ -3798,6 +3802,7 @@ function uniqueNums(){
 const NOLOCK=['statement'];
 function isLocked(){return !NOLOCK.includes(S.doc)&&!!S.locked&&!!S.nums[S.doc]&&S.locked[S.doc]===S.nums[S.doc]}
 function issueDoc(how){
+  if(BLANKF)return;
   if(NOLOCK.includes(S.doc)||!S.nums[S.doc]||isLocked())return;
   if(!(S.client.name||S.veh.make||S.veh.vin))return;
   S.locked=Object.assign({},S.locked,{[S.doc]:S.nums[S.doc]});S.lockedAt=Object.assign({},S.lockedAt||{},{[S.doc]:{t:Date.now(),how}});
@@ -3819,6 +3824,23 @@ function reissueDoc(){
   fillEditor();render();save();setStatus('تم حفظ النسخة الصادرة كملغاة، والمستند المعدّل برقم '+nn+'.');
 }
 document.getElementById('lockReissue').addEventListener('click',reissueDoc);
+// a pen-and-paper contract: same template for the chosen kind, seller filled in, everything else left blank
+function blankContract(kind){
+  const keep=S,b=JSON.parse(JSON.stringify(S,(k,v)=>k==='company'?undefined:v));
+  b.company=keep.company;b.sellers=keep.sellers;b.doc='contract';b.lang='ar';
+  b.client={type:'individual',name:'',nameEn:'',cr:'',idNo:'',address:'',vat:'',phone:''};
+  b.veh=Object.assign(emptyVeh(kind||ctKind()),{kind:kind||ctKind()});b.vehOn=true;
+  b.items=[];b.discount=0;b.advance=0;b.trade={on:false,value:0};b.plan={type:'none'};b.payments=[];b.rc=Object.assign({},b.rc,{amount:0});
+  b.nums=Object.assign({},b.nums,{contract:''});b.date='';b.seal='none';b.locked={};b.cancelled={};b.drive={};b.qrOn=false;
+  const ct=b.ct;Object.keys(ct).forEach(k=>{if(typeof ct[k]==='string'&&k!=='clausesAr'&&k!=='clausesEn')ct[k]='';if(typeof ct[k]==='number')ct[k]=0});
+  ct.svc={};['new','used','truck'].forEach(k=>{ct.svc[k]=Object.fromEntries(Object.keys(SVC_DEF[k]).map(f=>[f,Array.isArray(SVC_DEF[k][f])?[]:'']))});
+  BLANKF=true;S=b;render();
+  return ()=>{BLANKF=false;S=keep;render()};
+}
+document.getElementById('ctBlank').addEventListener('click',()=>{
+  const undo=blankContract();const done=()=>{window.removeEventListener('afterprint',done);undo()};
+  window.addEventListener('afterprint',done);const t0=document.title;document.title='عقد-فارغ-'+(KIND_CT[ctKind()]||{}).t;window.print();setTimeout(()=>{document.title=t0},500);
+});
 /* several vehicles from stock into one quotation or invoice: identical models become one line with a quantity */
 (function(){
   const box=document.getElementById('invPick'),list=document.getElementById('invPickList'),sel=new Set();
@@ -4182,9 +4204,10 @@ const EXT_OPT=[['tint','تظليل'],['ppf','PPF'],['assist','مساعدة'],['d
 function ctKind(){return KIND_CT[S.veh.kind]?S.veh.kind:'new'}
 function ctSvc(){const k=ctKind();S.ct.svc[k]=Object.assign({},SVC_DEF[k],S.ct.svc[k]||{});return S.ct.svc[k]}
 function ctClauses(){const k=ctKind(),c=S.ct.clauses[k];return (c&&c.trim())?c:CT_CL[k].join('\n')}
-function cb(on,label){return '<span class="cbx"><i class="cb'+(on?' on':'')+'"></i>'+esc(label)+'</span>'}
-function B(v,w){v=v==null?'':String(v).trim();return v?'<b class="fv"><bdi>'+esc(v)+'</bdi></b>':'<span class="blank"'+(w?' style="min-width:'+w+'mm"':'')+'></span>'}
-function BN(v,w){v=v==null?'':String(v).trim();return v?'<b class="fv num">'+esc(v)+'</b>':'<span class="blank"'+(w?' style="min-width:'+w+'mm"':'')+'></span>'}
+let BLANKF=false;
+function cb(on,label){return '<span class="cbx"><i class="cb'+(on&&!BLANKF?' on':'')+'"></i>'+esc(label)+'</span>'}
+function B(v,w){v=v==null?'':String(v).trim();if(BLANKF&&(/صفر/.test(v)||v==='—'))v='';return v?'<b class="fv"><bdi>'+esc(v)+'</bdi></b>':'<span class="blank"'+(w?' style="min-width:'+w+'mm"':'')+'></span>'}
+function BN(v,w){v=v==null?'':String(v).trim();if(BLANKF&&/^[−—\-0.,\s]+$/.test(v))v='';return v?'<b class="fv num">'+esc(v)+'</b>':'<span class="blank"'+(w?' style="min-width:'+w+'mm"':'')+'></span>'}
 const SEP='<span class="sep">|</span>';
 function trs(rows){return rows.map(r=>'<tr><th>'+r[0]+'</th><td>'+r[1]+'</td></tr>').join('')}
 function h3(a,e){return '<h3><span>'+a+'</span>'+(e?'<span class="en">'+e+'</span>':'')+'</h3>'}
