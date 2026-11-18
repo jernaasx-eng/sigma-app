@@ -3261,7 +3261,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         <summary>بيانات الرسالة الرسمية</summary>
         <div class="fields">
           <label class="f">نوع الرسالة
-            <select id="ltTpl" data-bind="lt.tpl"><option value="whom">شهادة بيع مركبة (لمن يهمه الأمر)</option><option value="bank">رسالة إلى البنك / شركة التمويل</option><option value="clear">براءة ذمة</option><option value="auth">تفويض مندوب</option><option value="free">رسالة حرة</option></select>
+            <select id="ltTpl" data-bind="lt.tpl"><option value="reg">طلب تسجيل مؤقت (رقم فحص)</option><option value="whom">شهادة بيع مركبة (لمن يهمه الأمر)</option><option value="bank">رسالة إلى البنك / شركة التمويل</option><option value="clear">براءة ذمة</option><option value="auth">تفويض مندوب</option><option value="free">رسالة حرة</option></select>
           </label>
           <label class="f">المرسل إليه <input id="ltTo" data-bind="lt.to" dir="rtl"></label>
           <label class="f">الجهة (اختياري) <input id="ltOrg" data-bind="lt.org" dir="rtl"></label>
@@ -4128,6 +4128,7 @@ function vehTable(){
   return '<table class="trTab"><thead><tr>'+cols.map(c=>'<th>'+c[0]+'</th>').join('')+'</tr></thead><tbody><tr>'+cols.map(c=>'<td>'+c[1]+'</td>').join('')+'</tr></tbody></table>';
 }
 const LT={
+  reg:{to:'الفاضل / مدير الإدارة العامة لتراخيص المركبات',org:'شرطة عُمان السلطانية',subject:'طلب تسجيل مؤقت'},
   whom:{to:'إلى من يهمه الأمر',org:'',subject:'شهادة بيع مركبة'},
   bank:{to:'الأفاضل / بنك ................',org:'',subject:'عرض سعر مركبة لغرض التمويل'},
   clear:{to:'إلى من يهمه الأمر',org:'',subject:'براءة ذمة'},
@@ -4140,6 +4141,7 @@ function ltDefault(){
   const who=cl.type==='company'?'الشركة / '+(cl.name||D)+' والمسجلة لدى أمانة السجل التجاري برقم '+(cl.cr||D):'الفاضل / '+(cl.name||D)+' حامل البطاقة الشخصية رقم '+(cl.idNo||D);
   const price=t.net>0?num(t.net)+' '+cu+' ('+arMoney(t.net)+')':D+' '+cu;
   const tbl=lt.table?'الموضحة بياناتها في الجدول أدناه':'المذكورة';
+  if(lt.tpl==='reg')return 'بالإشارة إلى الموضوع أعلاه، نرغب بتسجيل وإصدار رقم فحص لتكملة إجراءات المركبة '+(lt.table?'الموضحة في الجدول التالي:':'المذكورة.');
   if(lt.tpl==='whom')return 'نفيد '+we+' بأن '+who+' قد اشترى منا المركبة '+tbl+' بموجب الفاتورة رقم '+(S.nums.invoice||D)+' بتاريخ '+fmtDate(S.date)+'.\nوقد أُعطيت له هذه الشهادة بناءً على طلبه دون أدنى مسؤولية على الشركة تجاه الغير.';
   if(lt.tpl==='bank')return 'بالإشارة إلى الموضوع أعلاه، وبناءً على طلب '+who+'، نفيدكم '+we+' بأن سعر المركبة '+tbl+' هو '+price+(t.vat>0?' شاملاً ضريبة القيمة المضافة':'')+'.\nنرجو التكرم بإصدار أمر الشراء أو الشيك باسم '+(co.nameAr||co.nameEn||D)+'، وسيتم تسليم المركبة وإنهاء إجراءات تسجيلها بعد استلام كامل المبلغ.\nهذا العرض ساري لمدة (7) أيام من تاريخه.';
   if(lt.tpl==='clear')return 'نفيد '+we+' بأن '+who+' قد سدّد كامل قيمة المركبة '+tbl+' والبالغة '+price+'، وبذلك تكون ذمته بريئة تجاهنا من أي التزامات مالية تخص هذه المركبة.\nوقد أُعطيت له هذه الشهادة بناءً على طلبه.';
@@ -4160,7 +4162,7 @@ function bodyLetter(){
     '<div class="trTo"><div class="l1"><span>'+B(to,50)+'</span><span>'+suf+'</span></div>'+(lt.org?'<div>'+B(lt.org)+'</div>':'')+'<div>تحية طيبة وبعد،،،</div></div>'+
     '<h2 class="trSub">الموضوع / '+(lt.subject?'<bdi>'+esc(lt.subject)+'</bdi>':'<span class="blank" style="min-width:40mm"></span>')+'</h2>'+
     (paras.length?paras.map((x,i)=>'<p class="trP"><bdi>'+esc(x)+'</bdi></p>'+(i===0&&lt.table?vehTable():'')).join(''):(lt.table?vehTable():'')+'<p class="trP">&nbsp;</p>')+
-    '<p class="trP trThanks">وتفضلوا بقبول فائق الاحترام والتقدير.</p>'+
+    '<p class="trP trThanks">'+(lt.tpl==='reg'?'شاكرين لكم حسن تعاونكم معنا، وتقبلوا فائق الاحترام والتقدير.':'وتفضلوا بقبول فائق الاحترام والتقدير.')+'</p>'+
     sigs([{k:'sigTr',sign:1,stamp:1,who:'<span class="soft">عن / </span>'+T(legal)}],true)+
   '</div>';
 }
