@@ -3053,7 +3053,15 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
             </div>
             <img id="signPrev" class="seal-prev" alt="معاينة التوقيع" hidden>
           </div>
-          <label class="toggle"><input type="checkbox" id="sealOn"> إظهار الختم والتوقيع في المستندات</label>
+          <div class="f">عرض الختم والتوقيع في المستندات
+            <div class="seg" role="radiogroup" style="flex-wrap:wrap">
+              <label><input type="radio" name="seal" value="both">الختم والتوقيع</label>
+              <label><input type="radio" name="seal" value="stamp">الختم فقط</label>
+              <label><input type="radio" name="seal" value="sign">التوقيع فقط</label>
+              <label><input type="radio" name="seal" value="none">بدون</label>
+            </div>
+            <p class="hint">«بدون» يترك مكان التوقيع فارغاً للتوقيع والختم باليد بعد الطباعة. الاختيار يُحفظ لكل بائع وللمستند.</p>
+          </div>
           <label class="f">الورق الرسمي (الليتر هيد)
             <select id="lhMode" data-bind="lhMode"><option value="official">في العقود والرسائل الرسمية فقط</option><option value="all">في كل المستندات</option><option value="off">بدون ورق رسمي</option></select>
           </label>
@@ -3579,13 +3587,13 @@ if(!S||!S.nums||!Array.isArray(S.items))S=null;
 let SEED=null;try{const el=document.getElementById('seed');if(el)SEED=JSON.parse(el.textContent)}catch(e){SEED=null}
 if(SEED&&SEED.nums&&(!S||(SEED.ts||0)>(S.ts||0)))S=SEED;
 if(!S)S=demo();
-const SELLER_KEEP=['bank','thanks','lhMode','theme'];
+const SELLER_KEEP=['bank','thanks','lhMode','theme','seal'];
 // what belongs to the seller travels with the seller: mirrored into the profile on every save, loaded back on switch
 function sellerStore(){const c=S.company;if(!c)return;SELLER_KEEP.forEach(k=>{c[k]=S[k]});if(c.custom)c.mark=String(c.nameEn||c.nameAr||'•').trim().charAt(0)||'•'}
 function sellerLoad(){const c=S.company;if(!c)return;const d=demo();
   S.bank=c.bank!==undefined?c.bank:(S.seller==='sigma'?d.bank:'');
   S.thanks=c.thanks!==undefined?c.thanks:(S.seller==='sigma'?d.thanks:'شكراً لتعاملكم معنا — Thank you for your business');
-  S.lhMode=c.lhMode||'official';if(c.theme!=null)S.theme=c.theme}
+  S.lhMode=c.lhMode||'official';if(c.theme!=null)S.theme=c.theme;if(c.seal)S.seal=c.seal}
 function blankSeller(){return{legal:'',nameAr:'',nameEn:'',cr:'',vat:'',address:'',phone:'',email:'',ig:'',logo:'',stamp:'',signature:'',letterhead:'',mark:'•',custom:true,theme:0}}
 function sellerLabel(id){const c=S.sellers[id]||{};return c.nameAr||c.nameEn||(id==='agomer'?'AGOMER Trading':'بائع جديد')}
 function migrate(){const d=demo();
@@ -3598,6 +3606,7 @@ function migrate(){const d=demo();
   if(S.qrOn===undefined)S.qrOn=true;
   if(!S.drive||typeof S.drive!=='object')S.drive={};
   if(S.sealOn===undefined)S.sealOn=true;
+  if(!S.seal)S.seal=S.sealOn===false?'none':'both';
   S.client=Object.assign({type:'individual',name:'',nameEn:'',cr:'',idNo:'',address:'',vat:'',phone:''},S.client||{});
   S.veh=Object.assign(emptyVeh(),S.veh||{});
   S.rc=Object.assign({},d.rc,S.rc||{});
@@ -3787,9 +3796,9 @@ function clauseHtml(){
   return (a||e)?'<div class="clause">'+a+e+'</div>':'';
 }
 function sigBox(s){
-  const c=S.company,on=S.sealOn;
-  const sg=on&&s.sign&&c.signature?'<img class="sg" src="'+esc(c.signature)+'" alt="">':'';
-  const st=on&&s.stamp&&c.stamp?'<img class="st" src="'+esc(c.stamp)+'" alt="">':'';
+  const c=S.company,m=S.seal||'both',showSg=m==='both'||m==='sign',showSt=m==='both'||m==='stamp';
+  const sg=showSg&&s.sign&&c.signature?'<img class="sg" src="'+esc(c.signature)+'" alt="">':'';
+  const st=showSt&&s.stamp&&c.stamp?'<img class="st" src="'+esc(c.stamp)+'" alt="">':'';
   return '<div class="sig"><div class="space'+((sg||st)?' has-img':'')+'">'+st+sg+'</div>'+capL(L[s.k].ar,L[s.k].en)+(s.who?'<div class="who">'+s.who+'</div>':'')+'</div>';
 }
 function sigs(list,noClause){
@@ -4456,7 +4465,7 @@ function fillEditor(){
   ed.querySelectorAll('input[name=pvm]').forEach(r=>r.checked=r.value===S.pv.method);
   syncLink();renderPays();renderDeals();renderMargin();backupNag();renderShare();renderSvcEd();syncDrive();
   document.getElementById('clauseOn').checked=!!S.clauseOn;
-  document.getElementById('sealOn').checked=S.sealOn!==false;
+  ed.querySelectorAll('input[name=seal]').forEach(r=>r.checked=r.value===(S.seal||'both'));
   if(typeof syncSealPrev==='function')syncSealPrev();
   syncVisibility();renderItemsEd();renderVehEd();renderChecksEd();
 }
@@ -4506,7 +4515,7 @@ ed.addEventListener('input',e=>{
   else if(el.id==='autoLink'){S.autoLink=el.checked;if(!el.checked){const E0=(S.autoLink=true,eff());S.autoLink=false;S.ref=E0.ref;S.rc.totalPrice=E0.total;S.rc.prevPaid=E0.prev}}
   else if(el.name==='aitarget'){return}
   else if(el.id==='clauseOn'){S.clauseOn=el.checked}
-  else if(el.id==='sealOn'){S.sealOn=el.checked}
+  else if(el.name==='seal'){S.seal=el.value;S.sealOn=el.value!=='none'}
   else if(el.name==='lang'){S.lang=el.value}
   else if(el.name==='theme'){S.theme=+el.value;S.company.theme=S.theme}
   else if(el.name==='seller'){sellerStore();S.seller=el.value;S.company=S.sellers[el.value];sellerLoad();fillEditor()}
