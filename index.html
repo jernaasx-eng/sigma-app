@@ -3034,7 +3034,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
                 <option value="USD">دولار أمريكي (USD)</option>
               </select>
             </label>
-            <label class="f" data-docs="invoice quote">نسبة الضريبة %
+            <label class="f" data-docs="invoice quote contract">نسبة الضريبة %
               <input id="vatRate" type="number" step="any" min="0" data-bind="vatRate" data-num>
             </label>
           </div>
@@ -3176,9 +3176,10 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open data-docs="invoice quote">
-        <summary>البنود</summary>
+      <details open data-docs="invoice quote contract">
+        <summary>البنود والسعر</summary>
         <div class="fields">
+          <p class="hint" data-docs="contract"><b>سعر المركبة في العقد = البند الأول.</b> أي بنود بعده تظهر في العقد كـ«إضافات»، والخصم والضريبة والمقايضة تنحسب في الإجمالي.</p>
           <div class="items-ed" id="itemsEd"></div>
           <div class="ai-row"><button id="addItem" class="btn" type="button">+ إضافة بند</button><button id="vehItem" class="btn" type="button">إضافة المركبة كبند</button><button id="invPickBtn" class="btn" type="button">+ مركبات من المخزون</button></div>
           <div id="invPick" class="invpick" hidden>
