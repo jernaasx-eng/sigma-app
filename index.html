@@ -2447,6 +2447,9 @@ textarea{resize:vertical;min-height:62px;line-height:1.55}
 .kv .k.en{text-align:end}
 .mode-bi .kv .k.en,.mode-bi .tg .k.en{text-align:left}
 .kv .v{font-weight:500;overflow-wrap:anywhere;font-size:9.4pt;line-height:1.45}
+.vbox.dense .kv>*{padding:.15mm 0}
+.vbox.dense .kv .v{font-size:8.6pt;line-height:1.25}
+.vbox.dense .kv .k{font-size:7.8pt;line-height:1.25}
 .kv .k{line-height:1.45}
 .meta .kv .v{white-space:nowrap;overflow-wrap:normal}
 .mode-bi .kv.c{grid-template-columns:max-content minmax(0,1fr) max-content}
@@ -2872,7 +2875,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         <select id="invStatus"><option value="">الكل</option><option value="available" selected>متاحة</option><option value="reserved">محجوزة</option><option value="sold">مباعة</option></select>
       </label>
       <label class="f">النوع
-        <select id="invKind"><option value="">الكل</option><option value="new">سيارات جديدة</option><option value="used">سيارات مستعملة</option><option value="truck">شاحنات</option></select>
+        <select id="invKind"><option value="">الكل</option><option value="new">سيارات جديدة</option><option value="used">سيارات مستعملة</option><option value="truck">شاحنات</option><option value="trailer">مقطورات</option></select>
       </label>
       <label class="f grow">بحث <input id="invSearch" placeholder="الماركة، الطراز، رقم الهيكل، اللوحة"></label>
       <button id="invAdd" class="btn primary" type="button">+ إضافة مركبة</button>
@@ -3170,6 +3173,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
               <label><input type="radio" name="vkind" id="vk-new" value="new">سيارة جديدة</label>
               <label><input type="radio" name="vkind" id="vk-used" value="used">سيارة مستعملة</label>
               <label><input type="radio" name="vkind" id="vk-truck" value="truck">شاحنة</label>
+              <label><input type="radio" name="vkind" id="vk-trailer" value="trailer">مقطورة</label>
             </div>
           </div>
           <div class="vfields" id="vFields"></div>
@@ -3183,7 +3187,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
           <div class="items-ed" id="itemsEd"></div>
           <div class="ai-row"><button id="addItem" class="btn" type="button">+ إضافة بند</button><button id="vehItem" class="btn" type="button">إضافة المركبة كبند</button><button id="invPickBtn" class="btn" type="button">+ مركبات من المخزون</button></div>
           <div id="invPick" class="invpick" hidden>
-            <div class="ai-row"><input id="invPickQ" type="search" placeholder="بحث: النوع، الموديل، الشاصي" dir="auto" style="flex:1"><select id="invPickK"><option value="">الكل</option><option value="truck">شاحنات</option><option value="new">جديدة</option><option value="used">مستعملة</option></select></div>
+            <div class="ai-row"><input id="invPickQ" type="search" placeholder="بحث: النوع، الموديل، الشاصي" dir="auto" style="flex:1"><select id="invPickK"><option value="">الكل</option><option value="truck">شاحنات</option><option value="trailer">مقطورات</option><option value="new">جديدة</option><option value="used">مستعملة</option></select></div>
             <div id="invPickList" class="invpick-list"></div>
             <label class="toggle"><input type="checkbox" id="invPickGroup" checked> دمج المركبات المتشابهة في بند واحد بالكمية</label>
             <label class="toggle"><input type="checkbox" id="invPickVin"> كتابة أرقام الشاصي تحت كل بند</label>
@@ -3535,10 +3539,11 @@ const DOCS={
   statement:{ar:'كشف حساب عميل',en:'Statement of Account',prefix:'SC-ST-',noAr:'رقم الكشف',noEn:'Statement No.',capAr:'بيانات الكشف',capEn:'Statement Details',partyAr:'العميل',partyEn:'Customer'},
   delivery:{ar:'سند استلام مركبة',en:'Vehicle Delivery Receipt',prefix:'SC-DR-',noAr:'رقم السند',noEn:'Receipt No.',capAr:'بيانات السند',capEn:'Receipt Details',partyAr:'بيانات المستلم',partyEn:'Recipient'}
 };
-const KIND={new:{ar:'سيارة جديدة',en:'New Car'},used:{ar:'سيارة مستعملة',en:'Used Car'},truck:{ar:'شاحنة',en:'Truck'}};
-const ALL=['new','used','truck'];
+const KIND={new:{ar:'سيارة جديدة',en:'New Car'},used:{ar:'سيارة مستعملة',en:'Used Car'},truck:{ar:'شاحنة',en:'Truck'},trailer:{ar:'مقطورة',en:'Trailer'}};
+const ALL=['new','used','truck','trailer'];
 const VF=[
   {k:'truckType',ar:'نوع الشاحنة',en:'Truck Type',kinds:['truck']},
+  {k:'trlType',ar:'نوع المقطورة',en:'Trailer Type',kinds:['trailer']},
   {k:'make',ar:'الماركة',en:'Make',kinds:ALL},
   {k:'model',ar:'الطراز',en:'Model',kinds:ALL},
   {k:'trim',ar:'الفئة',en:'Trim',kinds:['new','used']},
@@ -3555,14 +3560,30 @@ const VF=[
   {k:'gearbox',ar:'ناقل الحركة',en:'Gearbox',kinds:['truck']},
   {k:'axle',ar:'نظام الدفع',en:'Axle Config.',kinds:['truck'],num:1},
   {k:'gvw',ar:'الوزن الإجمالي',en:'GVW',kinds:['truck']},
-  {k:'spec',ar:'المواصفات',en:'Specification',kinds:['used','truck']},
-  {k:'plate',ar:'رقم اللوحة',en:'Plate No.',kinds:['used','truck']},
+  {k:'spec',ar:'المواصفات',en:'Specification',kinds:['used','truck','trailer']},
+  {k:'plate',ar:'رقم اللوحة',en:'Plate No.',kinds:['used','truck','trailer']},
   {k:'odo',ar:'العداد (كم)',en:'Odometer (km)',kinds:['used','truck'],num:1},
-  {k:'regExp',ar:'انتهاء الملكية',en:'Reg. Expiry',kinds:['used','truck'],date:1},
-  {k:'warranty',ar:'الضمان',en:'Warranty',kinds:['new'],wide:1},
+  {k:'regExp',ar:'انتهاء الملكية',en:'Reg. Expiry',kinds:['used','truck','trailer'],date:1},
+  {k:'trAxles',ar:'المحاور',en:'Axles',kinds:['trailer']},
+  {k:'trChassis',ar:'الشاصي',en:'Chassis Beam',kinds:['trailer']},
+  {k:'trLen',ar:'الطول',en:'Length',kinds:['trailer']},
+  {k:'trWid',ar:'العرض',en:'Width',kinds:['trailer']},
+  {k:'trFloor',ar:'الفرش',en:'Flooring',kinds:['trailer']},
+  {k:'trRear',ar:'الأرجل الخلفية',en:'Rear Ramps',kinds:['trailer']},
+  {k:'trFront',ar:'الأرجل الأمامية',en:'Landing Legs',kinds:['trailer']},
+  {k:'trKing',ar:'الخابور',en:'King Pin',kinds:['trailer']},
+  {k:'trBrake',ar:'بلف الهواء',en:'Air Valve',kinds:['trailer']},
+  {k:'trElec',ar:'الكهرباء',en:'Lighting',kinds:['trailer']},
+  {k:'trBoxes',ar:'الصناديق',en:'Tool Boxes',kinds:['trailer']},
+  {k:'trSpare',ar:'سلة الإسبير',en:'Spare Carrier',kinds:['trailer']},
+  {k:'trWater',ar:'خزان المياه',en:'Water Tank',kinds:['trailer']},
+  {k:'trFridge',ar:'الثلاجة',en:'Fridge',kinds:['trailer']},
+  {k:'trKitchen',ar:'المطبخ',en:'Kitchen',kinds:['trailer']},
+  {k:'trTyres',ar:'الكفرات',en:'Tyres',kinds:['trailer']},
+  {k:'warranty',ar:'الضمان',en:'Warranty',kinds:['new','trailer'],wide:1},
   {k:'extras',ar:'مزايا مشمولة',en:'Included',kinds:['new'],ml:1},
   {k:'accidents',ar:'سجل الحوادث',en:'Accident History',kinds:['used','truck'],wide:1},
-  {k:'condition',ar:'حالة المركبة',en:'Condition',kinds:['used','truck'],ml:1}
+  {k:'condition',ar:'حالة المركبة',en:'Condition',kinds:['used','truck','trailer'],ml:1}
 ];
 const VDEF={
   warranty:'ضمان 5 سنوات بدون حد للكيلومترات',
@@ -3637,7 +3658,7 @@ const CT_EN=['The Buyer confirms having fully inspected the vehicle and accepts 
 'This contract is made in two copies, one for each party.'].join('\n');
 const CLAUSE_AR='تمت معاينة المركبة من قبل المشتري ووافق على شرائها على حالتها.';
 const CLAUSE_EN='The vehicle has been inspected by the buyer, who agreed to purchase it in its current condition.';
-function emptyVeh(kind){return{kind:kind||'new',drive:'',seats:'',origin:'',accidents:'',truckType:'',make:'',model:'',trim:'',year:'',color:'',interior:'',fuel:'',vin:'',engine:'',hp:'',gearbox:'',axle:'',gvw:'',spec:'',plate:'',odo:'',regExp:'',warranty:'',extras:'',condition:''}}
+function emptyVeh(kind){return{kind:kind||'new',trlType:'',trAxles:'',trChassis:'',trLen:'',trWid:'',trFloor:'',trRear:'',trFront:'',trKing:'',trBrake:'',trElec:'',trBoxes:'',trSpare:'',trWater:'',trFridge:'',trKitchen:'',trTyres:'',drive:'',seats:'',origin:'',accidents:'',truckType:'',make:'',model:'',trim:'',year:'',color:'',interior:'',fuel:'',vin:'',engine:'',hp:'',gearbox:'',axle:'',gvw:'',spec:'',plate:'',odo:'',regExp:'',warranty:'',extras:'',condition:''}}
 function demo(){return{
   doc:'invoice',lang:'bi',currency:'OMR',vatRate:5,theme:0,
   nums:{quote:'SC-QT-2026-0001',invoice:'SC-INV-2026-0001',receipt:'SC-RV-2026-0001',payment:'SC-PV-2026-0001',delivery:'SC-DR-2026-0001',contract:'SC-CT-2026-0001',transfer:'SC-TR-2026-0001',letter:'SC-LT-2026-0001',purchase:'SC-PR-2026-0001',statement:'SC-ST-2026-0001'},
@@ -3833,7 +3854,7 @@ function blankContract(kind){
   b.items=[];b.discount=0;b.advance=0;b.trade={on:false,value:0};b.plan={type:'none'};b.payments=[];b.rc=Object.assign({},b.rc,{amount:0});
   b.nums=Object.assign({},b.nums,{contract:''});b.date='';b.seal='none';b.locked={};b.cancelled={};b.drive={};b.qrOn=false;
   const ct=b.ct;Object.keys(ct).forEach(k=>{if(typeof ct[k]==='string'&&k!=='clausesAr'&&k!=='clausesEn')ct[k]='';if(typeof ct[k]==='number')ct[k]=0});
-  ct.svc={};['new','used','truck'].forEach(k=>{ct.svc[k]=Object.fromEntries(Object.keys(SVC_DEF[k]).map(f=>[f,Array.isArray(SVC_DEF[k][f])?[]:'']))});
+  ct.svc={};['new','used','truck','trailer'].forEach(k=>{ct.svc[k]=Object.fromEntries(Object.keys(SVC_DEF[k]).map(f=>[f,Array.isArray(SVC_DEF[k][f])?[]:'']))});
   BLANKF=true;S=b;render();
   return ()=>{BLANKF=false;S=keep;render()};
 }
@@ -4037,7 +4058,7 @@ function metaBlock(){
   return '<div class="info meta">'+capL(D.capAr,D.capEn)+'<div class="kv c last0">'+r+'</div></div>';
 }
 function vehFields(){const v=S.veh;return VF.filter(f=>f.kinds.includes(v.kind))}
-const COMPACT=['truckType','make','model','year','color','vin','plate'];
+const COMPACT=['truckType','trlType','make','model','year','color','vin','plate'];
 function vehicleBlock(compact,extraRows){
   const v=S.veh,fs=vehFields().filter(f=>!compact||COMPACT.includes(f.k));
   const short=fs.filter(f=>!f.ml&&!f.wide&&String(v[f.k]||'').trim());
@@ -4048,7 +4069,7 @@ function vehicleBlock(compact,extraRows){
   const g1=short.slice(0,half).map(cell).join(''),g2=short.slice(half).map(cell).join('');
   const K=KIND[v.kind];
   const badge='<span class="badge">'+(S.lang==='bi'?K.ar+' <span class="en">'+K.en+'</span>':one(K.ar,K.en))+'</span>';
-  return '<section class="vbox blk">'+cap('vehicle',badge)+
+  return '<section class="vbox blk'+(short.length>14?' dense':'')+'">'+cap('vehicle',badge)+
     '<div class="vgrid"><div class="kv c">'+g1+'</div><div class="kv c">'+g2+'</div></div>'+
     ((longs.length||extraRows)?'<div class="kv c last0 vwide">'+longs.map(cell).join('')+(extraRows||'')+'</div>':'')+
   '</section>';
@@ -4157,7 +4178,8 @@ function payTermsText(){
 const KIND_CT={
   new:{t:'عقد بيع مركبة جديدة',e:'NEW VEHICLE SALE AGREEMENT'},
   used:{t:'عقد بيع مركبة مستعملة',e:'USED VEHICLE SALE AGREEMENT'},
-  truck:{t:'عقد بيع شاحنة',e:'TRUCK SALE AGREEMENT'}};
+  truck:{t:'عقد بيع شاحنة',e:'TRUCK SALE AGREEMENT'},
+  trailer:{t:'عقد بيع مقطورة',e:'TRAILER SALE AGREEMENT'}};
 const CT_CL={
 new:['المركبة محل العقد جديدة وغير مستعملة، باستثناء المسافة الطبيعية الناتجة عن النقل والفحص والتجهيز والتسجيل. وتعد البيانات والمواصفات والخدمات المثبتة في هذا العقد وملحقاته المرجع بين الطرفين.',
 'لا تعد أي خدمة أو هدية أو ملحق مشمولاً ما لم يثبت كتابة. وإذا طرأ تغيير جوهري على المواصفات المتفق عليها قبل التسليم، يخطر المشتري ويعالج الأمر باتفاق مكتوب.',
@@ -4191,13 +4213,26 @@ truck:['الشاحنة محل العقد بالحالة المثبتة في بي
 'موافقة جهة التمويل مستقلة عن هذا العقد. وعند رفض التمويل أو طلب الإلغاء، يعالج مبلغ الحجز والتكاليف وفق الخيار المثبت في العقد والتكاليف الفعلية والأنظمة المعمول بها.',
 'يجوز تعديل موعد التسليم لأسباب خارجة عن السيطرة المعقولة، مثل الشحن أو الجمارك أو الإجراءات الحكومية أو التأمين أو القوة القاهرة، مع إخطار المشتري متى أمكن.',
 'تعتمد بيانات الاتصال المدونة في العقد للإخطارات، بما فيها الرسائل النصية وواتساب والبريد الإلكتروني متى أمكن إثباتها. ويمثل هذا العقد وملحقاته كامل الاتفاق بين الطرفين.',
+'يخضع العقد للقوانين والأنظمة المعمول بها في سلطنة عُمان. ويسعى الطرفان إلى الحل الودي أولاً، ثم تكون الجهة المختصة في سلطنة عُمان صاحبة الاختصاص عند تعذر التسوية.'],
+trailer:['المقطورة محل العقد مطابقة للمواصفات الفنية المثبتة في بياناتها (المحاور والشاصي والأبعاد والفرش والملحقات)، وقد عاينها المشتري معاينة تامة نافية للجهالة وقبلها بحالتها عند توقيع هذا العقد.',
+'يقر البائع بأن المقطورة خالية من أي رهن أو حجز أو قيد يمنع تسجيلها أو نقل ملكيتها، وبأن رقم الهيكل وبياناتها مطابقة لمستنداتها. ولا تعد أي خدمة أو ملحق مشمولاً ما لم يثبت كتابة.',
+'يلتزم المشتري بسداد المبالغ في مواعيدها وتقديم المستندات المطلوبة للتسجيل أو التمويل. وللبائع تعليق التسجيل أو التسليم إلى حين استيفاء المستحقات أو اعتماد التمويل نهائياً.',
+'يتولى المشتري الحصول على التصاريح اللازمة لتشغيل المقطورة، والالتزام بأنظمة الأوزان والأحمال والأبعاد والفحص الدوري، ما لم يُتفق كتابةً على قيام البائع بإجراءات التسجيل.',
+'يسري الضمان المثبت في بيانات المقطورة وفق شروط الجهة المقدمة له، ولا يشمل الأعطال الناتجة عن الحمولة الزائدة أو سوء التحميل أو سوء الاستخدام أو التعديلات غير المعتمدة أو إهمال الصيانة.',
+'يحق للمشتري قبل الاستلام التحقق من رقم الهيكل والمحاور والإطارات والأرجل والخابور وأنظمة الهواء والكهرباء والملحقات، ويثبت الاستلام بسند الاستلام الصادر عن البائع عند التسليم.',
+'تنتقل ملكية المقطورة بعد سداد القيمة المستحقة واستكمال التسجيل أو نقل الملكية، وتنتقل مسؤولية التشغيل والمخالفات والحوادث والحمولة إلى المشتري من تاريخ ووقت الاستلام الفعلي.',
+'موافقة جهة التمويل مستقلة عن هذا العقد. وعند رفض التمويل أو طلب الإلغاء، يعالج مبلغ الحجز والتكاليف وفق الخيار المثبت في العقد والتكاليف الفعلية والأنظمة المعمول بها.',
+'يجوز تعديل موعد التسليم لأسباب خارجة عن السيطرة المعقولة، مثل التصنيع أو الشحن أو الجمارك أو الإجراءات الحكومية أو القوة القاهرة، مع إخطار المشتري متى أمكن.',
+'تعتمد بيانات الاتصال المدونة في العقد للإخطارات، بما فيها الرسائل النصية وواتساب والبريد الإلكتروني متى أمكن إثباتها. ويمثل هذا العقد وملحقاته كامل الاتفاق بين الطرفين.',
 'يخضع العقد للقوانين والأنظمة المعمول بها في سلطنة عُمان. ويسعى الطرفان إلى الحل الودي أولاً، ثم تكون الجهة المختصة في سلطنة عُمان صاحبة الاختصاص عند تعذر التسوية.']};
 const ATTACH={new:['صورة الهوية/السجل','عرض السعر','إيصالات الدفع','موافقة التمويل','وثيقة التأمين','الضمان/الصيانة','مواصفات أو إكسسوارات'],
   used:['صورة الهوية/السجل','ملكية المركبة','تقرير الفحص الفني','إيصالات الدفع','موافقة التمويل','وثيقة التأمين'],
-  truck:['صورة الهوية/السجل','ملكية الشاحنة / البيان الجمركي','تقرير الفحص الفني','إيصالات الدفع','موافقة التمويل','وثيقة التأمين']};
+  truck:['صورة الهوية/السجل','ملكية الشاحنة / البيان الجمركي','تقرير الفحص الفني','إيصالات الدفع','موافقة التمويل','وثيقة التأمين'],
+  trailer:['صورة الهوية/السجل','مواصفات المقطورة','شهادة المصنع / البيان الجمركي','إيصالات الدفع','موافقة التمويل','وثيقة التأمين']};
 const SVC_DEF={new:{reg:'incl',regNote:'',ins:'full',insNote:'',war:'factory',warYears:'5',warKm:'غير محدود',mnt:'incl',mntCount:'',mntKm:'50,000',ext:[],extNote:''},
   used:{reg:'',regNote:'',ins:'',insNote:'',war:'none',warYears:'',warKm:'',mnt:'',mntCount:'',mntKm:'',ext:[],extNote:''},
-  truck:{reg:'',regNote:'',ins:'',insNote:'',war:'none',warYears:'',warKm:'',mnt:'',mntCount:'',mntKm:'',ext:[],extNote:''}};
+  truck:{reg:'',regNote:'',ins:'',insNote:'',war:'none',warYears:'',warKm:'',mnt:'',mntCount:'',mntKm:'',ext:[],extNote:''},
+  trailer:{reg:'',regNote:'',ins:'',insNote:'',war:'supplier',warYears:'1',warKm:'',mnt:'',mntCount:'',mntKm:'',ext:[],extNote:''}};
 const SVC_OPT={reg:[['incl','شامل'],['excl','غير شامل']],ins:[['full','شامل'],['tp','طرف ثالث'],['excl','غير شامل']],
   war:[['factory','مصنع'],['supplier','مورد'],['seller','البائع'],['none','غير شامل']],mnt:[['incl','مشمولة'],['excl','غير مشمولة']]};
 const EXT_OPT=[['tint','تظليل'],['ppf','PPF'],['assist','مساعدة'],['delivery','توصيل'],['charger','شاحن'],['other','أخرى']];
@@ -4214,6 +4249,13 @@ function h3(a,e){return '<h3><span>'+a+'</span>'+(e?'<span class="en">'+e+'</spa
 function has(txt,w){return String(txt||'').includes(w)}
 function vehRows(){
   const v=S.veh,k=ctKind();
+  if(k==='trailer'){const sp=[['المحاور','trAxles'],['الشاصي','trChassis'],['الطول / العرض',null],['الفرش','trFloor'],['الأرجل الخلفية','trRear'],['الأرجل الأمامية','trFront'],['الخابور','trKing'],['بلف الهواء','trBrake'],['الكهرباء','trElec'],['الصناديق','trBoxes'],['سلة الإسبير','trSpare'],['خزان المياه','trWater'],['الثلاجة','trFridge'],['المطبخ','trKitchen'],['الكفرات','trTyres']];
+    return [
+    ['نوع المقطورة / الشركة المصنعة',B(v.trlType,30)+' / '+B(v.make,40)],
+    ['الطراز / سنة الصنع / اللون',B(v.model,25)+' / '+BN(v.year,15)+' / '+B(v.color,25)],
+    ['رقم الهيكل VIN / رقم اللوحة',BN(v.vin,50)+SEP+B(v.plate,25)]].concat(
+    (()=>{const val=([l,f])=>f?B(v[f],35):B(v.trLen,15)+' / '+B(v.trWid,15),out=[];for(let i=0;i<sp.length;i+=2){const a=sp[i],b=sp[i+1];out.push([a[0]+(b?' / '+b[0]:''),val(a)+(b?SEP+val(b):'')])}return out})(),
+    [['الضمان',B(v.warranty,70)],['الحالة والملاحظات',B(v.condition,80)]])}
   if(k==='truck')return [
     ['نوع الشاحنة / الشركة / الطراز',B(v.truckType,25)+' / '+B(v.make,25)+' / '+B(v.model,25)],
     ['سنة الصنع / اللون',BN(v.year,20)+' / '+B(v.color,30)],
@@ -4248,7 +4290,7 @@ function bodyContract(){
   const paid=paidBefore()+(Number(S.rc.amount)||0),rest=Math.max(0,t.net-paid);
   const idv=cl.type==='company'?cl.cr:cl.idNo;
   const legal=co.legal||[co.nameAr,co.nameEn].filter(Boolean).join(' – ');
-  const vehWord=k==='truck'?'الشاحنة':'المركبة';
+  const vehWord=k==='truck'?'الشاحنة':k==='trailer'?'المقطورة':'المركبة';
   let h='<div class="ctT">'+
    '<div class="ttl"><h2>'+KIND_CT[k].t+'</h2><div>'+KIND_CT[k].e+'</div></div>'+
    '<table class="ctab" style="margin-top:2.4mm">'+trs([
@@ -4262,7 +4304,7 @@ function bodyContract(){
      ['الرقم المدني / السجل التجاري',BN(idv,50)],
      ['هاتف وعنوان المشتري','هاتف: '+BN(cl.phone,30)+SEP+'العنوان: '+B(cl.address,45)]])+'</table>'+
    '<p class="lead">ويشار إلى الطرف الأول بـ «البائع» وإلى الطرف الثاني بـ «المشتري»، وقد أقر الطرفان بأهليتهما القانونية للتعاقد.</p>'+
-   h3('ثانياً: بيانات '+vehWord,k==='truck'?'Truck Details':'Vehicle Details')+
+   h3('ثانياً: بيانات '+vehWord,k==='truck'?'Truck Details':k==='trailer'?'Trailer Details':'Vehicle Details')+
    '<table class="ctab">'+trs(vehRows())+'</table>'+
    h3('ثالثاً: السعر والخدمات وطريقة الدفع','Price, Services & Payment')+
    '<table class="ctab">'+trs([
@@ -4298,7 +4340,7 @@ function bodyContract(){
   return h;
 }
 function vehTable(){
-  const v=S.veh,truck=v.kind==='truck',type=[v.make,v.model].filter(Boolean).join(' ')||(truck?'شاحنة':'');
+  const v=S.veh,truck=v.kind==='truck',type=(v.kind==='trailer'?[v.trlType?'مقطورة '+v.trlType:'مقطورة',v.make,v.model]:[v.make,v.model]).filter(Boolean).join(' ')||(truck?'شاحنة':'');
   const cols=[['نوع المركبة',B(type,20)],['رقم الشاصي',BN(v.vin,24)],['اللون',B(v.color,12)],['سنة الصنع',BN(v.year,8)]];
   if(v.plate)cols.splice(2,0,['رقم اللوحة',BN(v.plate,14)]);
   return '<table class="trTab"><thead><tr>'+cols.map(c=>'<th>'+c[0]+'</th>').join('')+'</tr></thead><tbody><tr>'+cols.map(c=>'<td>'+c[1]+'</td>').join('')+'</tr></tbody></table>';
@@ -4396,15 +4438,15 @@ function openStatement(c){
   const p=document.getElementById('paper');if(p&&innerWidth<1100)p.scrollIntoView({behavior:'smooth'});
 }
 function bodyTransfer(){
-  const co=S.company,cl=S.client,v=S.veh,tr=S.tr||{},truck=v.kind==='truck';
-  const legal=co.nameAr||co.legal||co.nameEn,w=truck?'الشاحنة':'المركبة';
+  const co=S.company,cl=S.client,v=S.veh,tr=S.tr||{},truck=v.kind==='truck',trl=v.kind==='trailer';
+  const legal=co.nameAr||co.legal||co.nameEn,w=truck?'الشاحنة':trl?'المقطورة':'المركبة';
   const to=cl.type==='company'
     ?'الشركة / <b>'+B(cl.name,50)+'</b> والمسجلة لدى أمانة السجل التجاري برقم <b>'+BN(cl.cr,20)+'</b>'
     :'الفاضل / <b>'+B(cl.name,50)+'</b> حامل البطاقة الشخصية رقم <b>'+BN(cl.idNo,20)+'</b>';
   return '<div class="trL">'+
     '<div class="trRef"><span>الرقم: '+BN(S.nums.transfer,24)+'</span><span>التاريخ: '+BN(fmtDate(S.date),16)+'</span></div>'+
     '<div class="trTo"><div class="l1"><span>'+B(tr.to,50)+'</span><span>المحترم</span></div><div>'+B(tr.org,40)+'</div><div>تحية طيبة وبعد،،،</div></div>'+
-    '<h2 class="trSub">الموضوع / طلب نقل '+(truck?'شاحنة':'مركبة')+'</h2>'+
+    '<h2 class="trSub">الموضوع / طلب نقل '+(truck?'شاحنة':trl?'مقطورة':'مركبة')+'</h2>'+
     '<p class="trP">بالإشارة إلى الموضوع أعلاه، نحن / <b>'+B(legal,40)+'</b> والمسجلين لدى أمانة السجل التجاري برقم <b>'+BN(co.cr,14)+'</b>، '+
       'لا يوجد لدينا أي مانع من نقل '+w+' الموضحة بياناتها في الجدول أدناه إلى '+to+':</p>'+
     vehTable()+
@@ -4747,6 +4789,7 @@ function applyKindDefaults(){
   if(v.kind==='new'){if(!v.warranty)v.warranty=VDEF.warranty;if(!v.extras)v.extras=VDEF.extras}
   if(v.kind==='used'&&(!v.condition||v.condition===VDEF.condTruck))v.condition=VDEF.condUsed;
   if(v.kind==='truck'){if(!v.condition||v.condition===VDEF.condUsed)v.condition=VDEF.condTruck;if(!v.truckType)v.truckType='رأس تريلا'}
+  if(v.kind==='trailer'){if(v.condition===VDEF.condUsed||v.condition===VDEF.condTruck)v.condition='';if(!v.trlType)v.trlType='لوبد'}
 }
 
 document.querySelector('.docbar').addEventListener('change',e=>{
@@ -4808,7 +4851,9 @@ document.getElementById('addItem').addEventListener('click',()=>{
 });
 document.getElementById('vehItem').addEventListener('click',()=>{
   const v=S.veh,k=KIND[v.kind]||KIND.new;
-  let d=[k.ar,v.truckType,v.make,v.model,v.trim,v.year?('موديل '+v.year):''].filter(Boolean).join(' ');
+  const flds=new Set(vehFields().map(f=>f.k)),g=f=>flds.has(f)?v[f]:'';
+  let d=[k.ar,g('truckType'),g('trlType'),v.make,v.model,g('trim'),v.year?('موديل '+v.year):''].filter(Boolean).join(' ');
+  if(v.kind==='trailer'){const dim=[v.trLen&&('الطول '+v.trLen),v.trWid&&('العرض '+v.trWid),v.trAxles].filter(Boolean).join(' — ');if(dim)d+='\n'+dim}
   if(v.vin)d+='\nرقم الهيكل: '+v.vin;
   const empty=S.items.find(it=>!String(it.d||'').trim());
   if(empty)empty.d=d;else S.items.push({d,q:1,p:0});
@@ -5143,7 +5188,8 @@ Rules:
 - client.type: "individual" for a person (ID card, passport, licence), "company" for a commercial registration.
 - idNo: the civil / ID number, digits only. cr: commercial registration number, digits only. vat: as printed.
 - phone: as printed, keep the country code if shown. address: short, in Arabic if printed in Arabic.
-- vehicle.kind: "truck" for trucks, tractor heads and heavy vehicles; "used" for a registered car (plate, registration card, odometer); "new" for a new car (factory invoice, certificate of origin, new-vehicle customs). null if unsure.
+- Trailer specs (only when kind is "trailer"): trlType (لوبد/سطحة/…), trAxles (المحاور), trChassis (الشاصي), trLen (الطول), trWid (العرض), trFloor (الفرش), trRear (الأرجل الخلفية), trFront (الأرجل الأمامية), trKing (الخابور), trBrake (بلف الهواء), trElec (الكهرباء), trBoxes (الصناديق), trSpare (سلة الإسبير), trWater (خزان المياه), trFridge (الثلاجة), trKitchen (المطبخ), trTyres (الكفرات), warranty (الضمان) — copy each value exactly as written; make = the manufacturer or workshop name.
+- vehicle.kind: "trailer" for trailers and semi-trailers (لوبد، سطحة، مقطورة، قلاب مقطورة) and their specs sheets; "truck" for trucks, tractor heads and heavy vehicles; "used" for a registered car (plate, registration card, odometer); "new" for a new car (factory invoice, certificate of origin, new-vehicle customs). null if unsure.
 - make and model in Latin letters as manufacturers write them (e.g. "Toyota", "Land Cruiser"). trim as printed.
 - year: 4-digit model year. vin: the 17-character chassis number exactly as printed, uppercase, no spaces. engine: engine number as printed.
 - plate: number and letters as printed (e.g. "12345 أ ب"). odo: digits only, km.
@@ -5154,7 +5200,7 @@ Rules:
 - warnings: up to 3 short notes in Arabic about anything unclear, cut off or contradictory. Empty array if none.
 
 Reply with only this JSON (keep every key):
-{"docTypes":[],"client":{"type":null,"name":null,"nameEn":null,"idNo":null,"cr":null,"vat":null,"phone":null,"address":null},"vehicle":{"kind":null,"truckType":null,"make":null,"model":null,"trim":null,"year":null,"color":null,"interior":null,"fuel":null,"drive":null,"seats":null,"origin":null,"vin":null,"engine":null,"hp":null,"gearbox":null,"axle":null,"gvw":null,"spec":null,"plate":null,"odo":null,"regExp":null},"warnings":[]}
+{"docTypes":[],"client":{"type":null,"name":null,"nameEn":null,"idNo":null,"cr":null,"vat":null,"phone":null,"address":null},"vehicle":{"kind":null,"truckType":null,"trlType":null,"trAxles":null,"trChassis":null,"trLen":null,"trWid":null,"trFloor":null,"trRear":null,"trFront":null,"trKing":null,"trBrake":null,"trElec":null,"trBoxes":null,"trSpare":null,"trWater":null,"trFridge":null,"trKitchen":null,"trTyres":null,"make":null,"model":null,"trim":null,"year":null,"color":null,"interior":null,"fuel":null,"drive":null,"seats":null,"origin":null,"vin":null,"engine":null,"hp":null,"gearbox":null,"axle":null,"gvw":null,"spec":null,"plate":null,"odo":null,"regExp":null,"warranty":null},"warnings":[]}
 ${text?'\nPasted text from the user (between <<< and >>>):\n<<<\n'+text.slice(0,6000)+'\n>>>':''}`;
 }
 const AI_ERR_API={no_key:'أدخل مفتاح API أولاً.',bad_key:'مفتاح API غير صحيح. انسخه من جديد من console.anthropic.com.',forbidden:'المفتاح لا يملك صلاحية استخدام هذا النموذج.',credit:'الرصيد في حساب Anthropic غير كافٍ. اشحن الرصيد من console.anthropic.com.',network:'تعذّر الاتصال بخادم Anthropic. تأكد من اتصال الإنترنت.',upstream_error:'خادم Anthropic مشغول حالياً. حاول بعد دقيقة.'};
@@ -5248,7 +5294,7 @@ document.getElementById('aiRun').addEventListener('click',runAI);
       }
       blobs=blobs.slice(0,(aiLimits&&aiLimits.maxCount)||5);
       if(!aiLimits)throw {code:'images_unavailable'};
-      const extra='\n\nThis request is for the dealership stock list. Always classify vehicle.kind: "truck" for trucks, tractor heads, trailers, buses and heavy equipment; otherwise "used" when the document is a registration card (ملكية) or shows a plate number, an odometer reading, a previous owner or a first-registration date in an earlier year; otherwise "new" (factory or agency invoice, customs declaration or certificate for an unregistered zero-km vehicle).';
+      const extra='\n\nThis request is for the dealership stock list. Always classify vehicle.kind: "trailer" for trailers and semi-trailers (لوبد، سطحة، مقطورة); "truck" for trucks, tractor heads, buses and heavy equipment; otherwise "used" when the document is a registration card (ملكية) or shows a plate number, an odometer reading, a previous owner or a first-registration date in an earlier year; otherwise "new" (factory or agency invoice, customs declaration or certificate for an unregistered zero-km vehicle).';
       const r=await sampleFn.json(aiPrompt('vehicle','')+extra,{cache:false,images:blobs});
       const v=r&&r.vehicle;if(!v||typeof v!=='object')throw {code:'empty'};
       const got={};Object.keys(v).forEach(k=>{if(v[k]!=null&&String(v[k]).trim()!=='')got[k]=String(v[k]).trim()});
@@ -5496,7 +5542,7 @@ function chip0(st){const s=INVST[st]||INVST.available;return '<span class="chip 
 function invFormHtml(x){
   const fs=VF.filter(f=>f.kinds.includes(x.kind));
   return '<div class="invform"><b>'+(STORE.inv.some(r=>r.id===x.id)?'تعديل مركبة':'إضافة مركبة')+'</b>'+
-    '<div class="seg" role="radiogroup">'+['new','used','truck'].map(k=>'<label><input type="radio" name="ivkind" value="'+k+'"'+(x.kind===k?' checked':'')+'>'+KIND[k].ar+'</label>').join('')+'</div>'+
+    '<div class="seg" role="radiogroup">'+['new','used','truck','trailer'].map(k=>'<label><input type="radio" name="ivkind" value="'+k+'"'+(x.kind===k?' checked':'')+'>'+KIND[k].ar+'</label>').join('')+'</div>'+
     '<div class="vfields">'+fs.map(f=>{const v=esc(x[f.k]||'');const inp=f.ml?'<textarea data-iv="'+f.k+'" dir="auto" rows="2">'+v+'</textarea>':'<input data-iv="'+f.k+'" '+(f.date?'type="date"':'dir="'+(f.num?'ltr':'auto')+'"')+' value="'+v+'">';
       return '<label class="f'+(f.ml||f.wide?' wide':'')+'">'+f.ar+' '+inp+'</label>'}).join('')+
     '<label class="f">التكلفة <input type="number" step="any" min="0" data-iv="cost" value="'+esc(x.cost||'')+'"></label>'+
