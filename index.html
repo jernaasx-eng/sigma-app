@@ -2907,7 +2907,6 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
     <label><input type="radio" name="doc" id="doc-payment" value="payment"><b>سند صرف</b><small>Payment Voucher</small></label>
     <label><input type="radio" name="doc" id="doc-delivery" value="delivery"><b>سند استلام مركبة</b><small>Delivery Receipt</small></label>
     <label><input type="radio" name="doc" id="doc-contract" value="contract"><b>عقد بيع مركبة</b><small>Sale Contract</small></label>
-    <label><input type="radio" name="doc" id="doc-transfer" value="transfer"><b>طلب نقل مركبة</b><small>Transfer Request</small></label>
     <label><input type="radio" name="doc" id="doc-letter" value="letter"><b>رسالة رسمية</b><small>Official Letter</small></label>
     <label><input type="radio" name="doc" id="doc-purchase" value="purchase"><b>سند شراء مركبة</b><small>Purchase Receipt</small></label>
     <label><input type="radio" name="doc" id="doc-statement" value="statement"><b>كشف حساب</b><small>Statement</small></label>
@@ -3356,7 +3355,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         <summary>بيانات الرسالة الرسمية</summary>
         <div class="fields">
           <label class="f">نوع الرسالة
-            <select id="ltTpl" data-bind="lt.tpl"><option value="reg">طلب تسجيل مؤقت (رقم فحص)</option><option value="whom">شهادة بيع مركبة (لمن يهمه الأمر)</option><option value="bank">رسالة إلى البنك / شركة التمويل</option><option value="clear">براءة ذمة</option><option value="auth">تفويض مندوب</option><option value="free">رسالة حرة</option></select>
+            <select id="ltTpl" data-bind="lt.tpl"><option value="transfer">طلب نقل مركبة (عدم ممانعة)</option><option value="reg">طلب تسجيل مؤقت (رقم فحص)</option><option value="whom">شهادة بيع مركبة (لمن يهمه الأمر)</option><option value="bank">رسالة إلى البنك / شركة التمويل</option><option value="clear">براءة ذمة</option><option value="auth">تفويض مندوب</option><option value="free">رسالة حرة</option></select>
           </label>
           <label class="f">المرسل إليه <input id="ltTo" data-bind="lt.to" dir="rtl"></label>
           <label class="f">الجهة (اختياري) <input id="ltOrg" data-bind="lt.org" dir="rtl"></label>
@@ -4116,7 +4115,7 @@ function sellerLoad(){const c=S.company;if(!c)return;const d=demo();
   S.lhMode=c.lhMode||'official';if(c.theme!=null)S.theme=c.theme;if(c.seal)S.seal=c.seal}
 function blankSeller(){return{legal:'',nameAr:'',nameEn:'',cr:'',vat:'',address:'',phone:'',email:'',ig:'',logo:'',stamp:'',signature:'',letterhead:'',mark:'•',custom:true,theme:0}}
 function sellerLabel(id){const c=S.sellers[id]||{};return c.nameAr||c.nameEn||(id==='agomer'?'AGOMER Trading':'بائع جديد')}
-function migrate(){const d=demo();
+function migrate(){const d=demo();if(S.doc==='transfer')transferToLetter();
   for(const k of Object.keys(d))if(S[k]===undefined)S[k]=d[k];
   if(!S.sellers||typeof S.sellers!=='object')S.sellers={sigma:Object.assign(sigma(),S.company||{}),agomer:agomer()};
   S.sellers.sigma=Object.assign(sigma(),S.sellers.sigma||{});if(!S.sellers.sigma.cr)S.sellers.sigma.cr='1320978';
@@ -4144,6 +4143,7 @@ function migrate(){const d=demo();
   if(!S.locked||typeof S.locked!=='object')S.locked={};
   if(!S.cancelled||typeof S.cancelled!=='object')S.cancelled={};if(!S.cancelWhy||typeof S.cancelWhy!=='object')S.cancelWhy={};
 }
+function transferToLetter(){if(S.doc!=='transfer')return;const tr=S.tr||{},k=S.veh.kind;S.doc='letter';S.lt=Object.assign({},S.lt,{tpl:'transfer',to:tr.to||LT.transfer.to,org:tr.org||LT.transfer.org,subject:'طلب نقل '+(k==='truck'?'شاحنة':k==='trailer'?'مقطورة':'مركبة'),text:'',table:'1'});if(S.nums.transfer&&!S.nums.letter)S.nums.letter=S.nums.transfer}
 migrate();
 lastCfg=JSON.stringify(cfgData());
 if(S!==SEED){const t=isoDate(0);if(S.date!==t){S.date=t;if(S.due&&S.due<t)S.due=''}}
@@ -4757,6 +4757,7 @@ function vehTable(){
   return '<table class="trTab"><thead><tr>'+cols.map(c=>'<th>'+c[0]+'</th>').join('')+'</tr></thead><tbody><tr>'+cols.map(c=>'<td>'+c[1]+'</td>').join('')+'</tr></tbody></table>';
 }
 const LT={
+  transfer:{to:'الفاضل / مدير الإدارة العامة لتراخيص المركبات',org:'شرطة عُمان السلطانية',subject:'طلب نقل مركبة'},
   reg:{to:'الفاضل / مدير الإدارة العامة لتراخيص المركبات',org:'شرطة عُمان السلطانية',subject:'طلب تسجيل مؤقت'},
   whom:{to:'إلى من يهمه الأمر',org:'',subject:'شهادة بيع مركبة'},
   bank:{to:'الأفاضل / بنك ................',org:'',subject:'عرض سعر مركبة لغرض التمويل'},
@@ -4770,6 +4771,8 @@ function ltDefault(){
   const who=cl.type==='company'?'الشركة / '+(cl.name||D)+' والمسجلة لدى أمانة السجل التجاري برقم '+(cl.cr||D):'الفاضل / '+(cl.name||D)+' حامل البطاقة الشخصية رقم '+(cl.idNo||D);
   const price=t.net>0?num(t.net)+' '+cu+' ('+arMoney(t.net)+')':D+' '+cu;
   const tbl=lt.table?'الموضحة بياناتها في الجدول أدناه':'المذكورة';
+  if(lt.tpl==='transfer'){const k=S.veh.kind,w=k==='truck'?'الشاحنة':k==='trailer'?'المقطورة':'المركبة';
+    return 'بالإشارة إلى الموضوع أعلاه، '+we+'، لا يوجد لدينا أي مانع من نقل '+w+' '+tbl+' إلى '+who+(lt.table?':':'.')}
   if(lt.tpl==='reg')return 'بالإشارة إلى الموضوع أعلاه، نرغب بتسجيل وإصدار رقم فحص لتكملة إجراءات المركبة '+(lt.table?'الموضحة في الجدول التالي:':'المذكورة.');
   if(lt.tpl==='whom')return 'نفيد '+we+' بأن '+who+' قد اشترى منا المركبة '+tbl+' بموجب الفاتورة رقم '+(S.nums.invoice||D)+' بتاريخ '+fmtDate(S.date)+'.\nوقد أُعطيت له هذه الشهادة بناءً على طلبه دون أدنى مسؤولية على الشركة تجاه الغير.';
   if(lt.tpl==='bank')return 'بالإشارة إلى الموضوع أعلاه، وبناءً على طلب '+who+'، نفيدكم '+we+' بأن سعر المركبة '+tbl+' هو '+price+(t.vat>0?' شاملاً ضريبة القيمة المضافة':'')+'.\nنرجو التكرم بإصدار أمر الشراء أو الشيك باسم '+(co.nameAr||co.nameEn||D)+'، وسيتم تسليم المركبة وإنهاء إجراءات تسجيلها بعد استلام كامل المبلغ.\nهذا العرض ساري لمدة (7) أيام من تاريخه.';
@@ -4791,7 +4794,7 @@ function bodyLetter(){
     '<div class="trTo"><div class="l1"><span>'+B(to,50)+'</span><span>'+suf+'</span></div>'+(lt.org?'<div>'+B(lt.org)+'</div>':'')+'<div>تحية طيبة وبعد،،،</div></div>'+
     '<h2 class="trSub">الموضوع / '+(lt.subject?'<bdi>'+esc(lt.subject)+'</bdi>':'<span class="blank" style="min-width:40mm"></span>')+'</h2>'+
     (paras.length?paras.map((x,i)=>'<p class="trP"><bdi>'+esc(x)+'</bdi></p>'+(i===0&&lt.table?vehTable():'')).join(''):(lt.table?vehTable():'')+'<p class="trP">&nbsp;</p>')+
-    '<p class="trP trThanks">'+(lt.tpl==='reg'?'شاكرين لكم حسن تعاونكم معنا، وتقبلوا فائق الاحترام والتقدير.':'وتفضلوا بقبول فائق الاحترام والتقدير.')+'</p>'+
+    '<p class="trP trThanks">'+((lt.tpl==='reg'||lt.tpl==='transfer')?'شاكرين لكم حسن تعاونكم معنا، وتقبلوا فائق الاحترام والتقدير.':'وتفضلوا بقبول فائق الاحترام والتقدير.')+'</p>'+
     sigs([{k:'sigTr',sign:1,stamp:1,who:'<span class="soft">عن / </span>'+T(legal)}],true)+
   '</div>';
 }
@@ -5282,7 +5285,8 @@ document.getElementById('logoFile').addEventListener('change',e=>{
   const r=new FileReader();r.onload=()=>{S.company.logo=r.result;render();save();checkLogo()};r.readAsDataURL(f);
 });
 document.getElementById('logoRemove').addEventListener('click',()=>{S.company.logo='';document.getElementById('logoWarn').hidden=true;document.getElementById('logoFile').value='';render();save()});
-function applyLtTpl(){const d=LT[S.lt.tpl]||LT.free;S.lt.to=S.lt.tpl==='bank'&&S.plan&&S.plan.bank?'الأفاضل / '+S.plan.bank:d.to;S.lt.org=d.org;S.lt.subject=d.subject;S.lt.text=''}
+function applyLtTpl(){const d=LT[S.lt.tpl]||LT.free;S.lt.to=S.lt.tpl==='bank'&&S.plan&&S.plan.bank?'الأفاضل / '+S.plan.bank:d.to;S.lt.org=d.org;S.lt.subject=d.subject;S.lt.text='';
+  if(S.lt.tpl==='transfer'){const k=S.veh.kind;S.lt.subject='طلب نقل '+(k==='truck'?'شاحنة':k==='trailer'?'مقطورة':'مركبة')}}
 document.getElementById('ltTpl').addEventListener('change',()=>{applyLtTpl();fillEditor();render();save()});
 document.getElementById('ltText').addEventListener('input',e=>{S.lt.text=e.target.value;render();save()});
 document.getElementById('ltReset').addEventListener('click',()=>{S.lt.text='';render();save()});
