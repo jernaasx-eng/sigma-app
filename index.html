@@ -2564,12 +2564,14 @@ table.items tr{break-inside:avoid}
 .sig .space.has-img{height:16mm;border-color:transparent;display:flex;align-items:flex-end;justify-content:center;gap:1mm}
 .sig .space img{display:block;object-fit:contain;mix-blend-mode:multiply;max-width:50%}
 .sig .space img.st{height:22mm;margin-top:-4mm;transform:rotate(-6deg);opacity:.92}
-.sig .space img.sg{height:15mm}
+.sig .space img.sg{height:26mm;max-width:66%;margin-bottom:-2mm;position:relative;z-index:1}
+.sig .space img.st+img.sg,.sig .space img.sg+img.st{margin-inline-start:-7mm}
 .sigs:has(.has-img) .space{height:16mm}
 .doc-delivery .sigs:has(.has-img) .space,.doc-delivery .sig .space.has-img{height:13mm}
 .doc-delivery .sig .space img.st{height:18mm}
-.doc-delivery .sig .space img.sg{height:12mm}
+.doc-delivery .sig .space img.sg{height:20mm}
 .sig .space img:only-child{max-width:90%}
+.sig .space img.sg:only-child{max-width:96%}
 .seal-prev{max-height:70px;max-width:160px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px}
 .sig .cap{border-bottom:0;justify-content:center;gap:2mm;color:var(--ink-soft);padding-bottom:0}
 .sig .who{text-align:center;font-size:8.4pt;color:var(--ink);margin-top:.6mm;min-height:1em}
