@@ -2684,6 +2684,8 @@ input:disabled{opacity:.65}
 @media print{.pdfbar{display:none!important}}
 .paper.snap{zoom:1!important;box-shadow:none!important;margin:0!important;width:794px!important;max-width:none!important;--ink:#111114;--ink-soft:#44444C;--rule:#CDCDD4}
 .paper.snap .lhPage{box-shadow:none!important;margin:0!important;width:794px}
+.paper.snap.nolh,.paper.snap.nolh .lhPage{background:transparent!important}
+.paper.snap.nolh .lhImgEl{display:none!important}
 .invpick{border:1px solid var(--line,#ddd);border-radius:10px;padding:8px;display:grid;gap:6px}
 .invpick-list{max-height:260px;overflow:auto;display:grid;gap:2px}
 .invpick-list small{opacity:.7}
@@ -5511,13 +5513,22 @@ async function makePhonePdf(){
     const clone=paper.cloneNode(true);clone.removeAttribute('id');clone.classList.add('snap');host.appendChild(clone);document.body.appendChild(host);
     await new Promise(r=>setTimeout(r,60));
     const lh=clone.querySelector('.lhPages'),n=lh?clone.querySelectorAll('.lhPage').length:snapPaginate(clone);
+    // the letterhead is painted straight onto each page here: phone browsers (Safari above all) often drop large images inside the page snapshot
+    let lhIm=null;
+    if(lh&&lhCur){lhIm=new Image();lhIm.src=lhCur;try{await lhIm.decode()}catch(e){await new Promise(r=>{lhIm.onload=r;lhIm.onerror=r})}clone.classList.add('nolh');host.style.background='transparent'}
     const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4',compress:true});
     host.style.height=PGH+'px';
+    const opt=r=>({pixelRatio:r,width:PGW,height:PGH,cacheBust:false,style:{position:'static',left:'0',top:'0',zIndex:'auto',background:lhIm?'transparent':'#ffffff'}});
+    try{await htmlToImage.toCanvas(host,opt(.25))}catch(e){}
     for(let i=0;i<n;i++){
       msg.textContent='جارٍ تجهيز ملف PDF... صفحة '+(i+1)+' من '+n;
       clone.style.transform='translateY('+(-i*PGH)+'px)';
-      const cv=await htmlToImage.toCanvas(host,{pixelRatio:2.5,width:PGW,height:PGH,backgroundColor:'#ffffff',cacheBust:false,style:{position:'static',left:'0',top:'0',zIndex:'auto'}});
-      if(i)doc.addPage('a4','portrait');doc.addImage(cv.toDataURL('image/jpeg',.9),'JPEG',0,0,210,297,undefined,'FAST');
+      const cv=await htmlToImage.toCanvas(host,opt(2.5));
+      const out=document.createElement('canvas');out.width=cv.width;out.height=cv.height;const x=out.getContext('2d');
+      x.fillStyle='#ffffff';x.fillRect(0,0,out.width,out.height);
+      if(lhIm&&lhIm.naturalWidth)x.drawImage(lhIm,0,0,out.width,out.height);
+      x.drawImage(cv,0,0);
+      if(i)doc.addPage('a4','portrait');doc.addImage(out.toDataURL('image/jpeg',.9),'JPEG',0,0,210,297,undefined,'FAST');
     }
     const name=(S.nums[S.doc]||DOCS[S.doc].ar||'document').replace(/[\\/:*?"<>|]/g,'-')+'.pdf';
     pdfOut=new File([doc.output('blob')],name,{type:'application/pdf'});
