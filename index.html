@@ -2745,9 +2745,11 @@ input:disabled{opacity:.65}
 .paper>.tail{display:flex;flex-direction:column}
 /* company letterhead: the document is laid out by script into real A4 pages, each with the letterhead behind it and its header/footer zones kept clear */
 .paper.lh{display:block;padding:0;background:none;box-shadow:none;min-height:0}
-.lhPage{position:relative;width:100%;height:297mm;padding:24mm 14mm 15mm;background:#fff var(--lh) center/100% 100% no-repeat;box-shadow:0 1px 2px rgba(0,0,0,.08),0 14px 36px rgba(0,0,0,.14);margin-bottom:7mm;overflow:hidden;break-after:page;break-inside:avoid}
+.lhPage{position:relative;width:100%;height:297mm;padding:24mm 14mm 15mm;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08),0 14px 36px rgba(0,0,0,.14);margin-bottom:7mm;overflow:hidden;break-after:page;break-inside:avoid}
 .lhPage:last-child{margin-bottom:0;break-after:auto}
-.lhC{display:flex;flex-direction:column;height:100%}
+.lhC{display:flex;flex-direction:column;height:100%;position:relative;z-index:1}
+/* the letterhead is a real image, not a background, so it prints even when the print dialog leaves background graphics off */
+.lhImgEl{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;user-select:none;display:block}
 .lhC>.tail,.lhC>.ctT>.tail{display:flex;flex-direction:column}
 .lhC>.ctT{display:flex;flex-direction:column;flex:1 0 auto}
 .paper.lh .mast,.paper.lh .rule,.paper.lh .rule2{display:none}
@@ -4994,10 +4996,10 @@ function paginate(){
   const wrap=paper.querySelector('.lhPages');if(!wrap||paper.offsetParent===null)return;
   let page=wrap.firstElementChild,guard=0;
   while(page&&guard++<15){
-    const inner=page.firstElementChild;if(inner.scrollHeight<=inner.clientHeight+1)break;
+    const inner=page.querySelector(':scope>.lhC');if(!inner||inner.scrollHeight<=inner.clientHeight+1)break;
     const br=inner.getBoundingClientRect(),sc=br.height/(inner.offsetHeight||1)||1;
     const tail=splitAt(inner,br.top+inner.clientHeight*sc,true);if(!tail||!tail.childNodes.length)break;
-    const np=document.createElement('div');np.className='lhPage';np.appendChild(tail);wrap.appendChild(np);page=np;
+    const np=document.createElement('div');np.className='lhPage';np.innerHTML=lhImgTag(lhCur);np.appendChild(tail);wrap.appendChild(np);page=np;
   }
 }
 window.addEventListener('beforeprint',()=>{if(paper.querySelector('.lhPages'))render()});
@@ -5018,6 +5020,7 @@ function fitNames(){
 }
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(paper.querySelector('.lhPages'))render();else fitNames()});
 let lhCur='';
+function lhImgTag(src){return src?'<img class="lhImgEl" alt="" src="'+src+'">':''}
 // letterhead for this document: the seller's uploaded one, or Sigma's built-in; official = contracts and letters only
 function lhImg(){
   const m=S.lhMode||'official';if(m==='off')return '';
@@ -5062,7 +5065,7 @@ function renderInner(){
    body+
    (S.thanks&&S.doc!=='transfer'&&S.doc!=='letter'&&S.doc!=='purchase'?'<div class="bottom">'+T(S.thanks)+'</div>':'');
   paper.innerHTML=
-   (lh?'<div class="lhPages"><div class="lhPage"><div class="lhC">'+main+'</div></div></div>':main)+
+   (lh?'<div class="lhPages"><div class="lhPage">'+lhImgTag(lh)+'<div class="lhC">'+main+'</div></div></div>':main)+
    qrHtml()+
    (isVoid?'<div class="void"><span>'+(S.lang==='en'?'CANCELLED':'ملغى')+(S.lang==='bi'?'<small>CANCELLED</small>':'')+'</span></div>':'');
 }
