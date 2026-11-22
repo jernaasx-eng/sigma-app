@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>سيجما للسيارات — المركبات المتوفرة</title>
+<meta name="description" content="سيارات جديدة ومستعملة وشاحنات ومقطورات متوفرة الآن لدى سيجما للسيارات — تواصل معنا عبر واتساب.">
+<meta property="og:title" content="سيجما للسيارات — المركبات المتوفرة">
+<meta property="og:description" content="تصفّح المركبات المتوفرة الآن وتواصل معنا مباشرة عبر واتساب.">
+<meta property="og:image" content="icon-512.png">
+<meta name="theme-color" content="#B3121B">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--acc:#B3121B;--ink:#17171A;--soft:#6b6b73;--line:#e7e7ea;--bg:#f6f6f7;--card:#fff;--chip:#fff}
+@media (prefers-color-scheme:dark){:root{--ink:#f1f1f3;--soft:#a5a5ad;--line:#2b2b31;--bg:#111114;--card:#1a1a1f;--chip:#1a1a1f}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header.hero{background:#17171A;color:#fff;padding:22px 0 18px;border-bottom:4px solid var(--acc)}
+.hero .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.hero img.logo{height:54px;width:auto;background:#fff;border-radius:10px;padding:4px 8px}
+.hero .mark{width:54px;height:54px;border-radius:12px;background:var(--acc);display:grid;place-items:center;font-size:30px;font-weight:700}
+.hero h1{margin:0;font-size:22px;line-height:1.2}
+.hero p{margin:2px 0 0;opacity:.75;font-size:14px}
+.hero .grow{flex:1;min-width:200px}
+.hero .cta{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:999px;padding:9px 16px;font:inherit;font-weight:500;font-size:14px;text-decoration:none;border:1px solid transparent;cursor:pointer}
+.btn.wa{background:#1FA855;color:#fff}
+.btn.call{background:#fff;color:#17171A}
+.btn.ghost{background:transparent;color:inherit;border-color:var(--line)}
+.bar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;gap:8px;align-items:center;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1 1 auto}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff}
+.chip small{opacity:.7;margin-inline-start:4px}
+.bar input,.bar select{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:999px;padding:8px 14px;min-width:0}
+.bar input{flex:1 1 180px}
+main{padding:18px 0 40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.ph{position:relative;aspect-ratio:4/3;background:#ddd linear-gradient(135deg,#e9e9ec,#d6d6db);overflow:hidden}
+.ph .strip{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.ph .strip::-webkit-scrollbar{display:none}
+.ph img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:center;cursor:zoom-in}
+.ph .none{position:absolute;inset:0;display:grid;place-items:center;color:#8a8a92;font-size:14px}
+.ph .tag{position:absolute;top:10px;inset-inline-start:10px;background:rgba(0,0,0,.62);color:#fff;font-size:12px;padding:4px 10px;border-radius:999px}
+.ph .tag.res{inset-inline-start:auto;inset-inline-end:10px;background:#E8A317;color:#17171A;font-weight:700}
+.ph .count{position:absolute;bottom:10px;inset-inline-end:10px;background:rgba(0,0,0,.62);color:#fff;font-size:12px;padding:3px 9px;border-radius:999px}
+.body{padding:12px 14px 14px;display:grid;gap:8px;flex:1}
+.body h2{margin:0;font-size:17px;line-height:1.35}
+.meta{display:flex;gap:6px;flex-wrap:wrap;color:var(--soft);font-size:13px}
+.meta span{background:var(--bg);border-radius:6px;padding:2px 8px}
+.specs{margin:0;padding:0;list-style:none;display:grid;gap:3px;font-size:13px;color:var(--soft)}
+.specs li{display:flex;gap:6px}.specs b{color:var(--ink);font-weight:500}
+.specs.more li:nth-child(n+5){display:none}
+.morebtn{background:none;border:0;padding:0;color:var(--acc);font:inherit;font-size:13px;cursor:pointer;justify-self:start}
+.foot{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:6px;border-top:1px solid var(--line)}
+.price{font-weight:700;font-size:18px;color:var(--acc);font-variant-numeric:tabular-nums}
+.price small{font-size:12px;font-weight:500;color:var(--soft)}
+.price.ask{font-size:14px;color:var(--soft);font-weight:500}
+.foot .btn{margin-inline-start:auto;padding:8px 14px}
+.empty,.err{text-align:center;color:var(--soft);padding:60px 0}
+.skel{height:340px;border-radius:16px;background:linear-gradient(90deg,var(--card),var(--line),var(--card));background-size:200% 100%;animation:sk 1.2s infinite}
+@keyframes sk{to{background-position:-200% 0}}
+footer.site{border-top:1px solid var(--line);padding:18px 0 28px;color:var(--soft);font-size:13px}
+footer.site .wrap{display:grid;gap:4px}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:20;display:flex;align-items:center;justify-content:center}
+.lb[hidden]{display:none}
+.lb img{max-width:96vw;max-height:88vh;object-fit:contain}
+.lb button{position:absolute;background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:999px;width:44px;height:44px;font-size:22px;cursor:pointer}
+.lb .x{top:14px;inset-inline-end:14px}.lb .p{inset-inline-start:10px}.lb .n{inset-inline-end:10px}
+.fab{position:fixed;bottom:16px;inset-inline-start:16px;z-index:10;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+@media (max-width:520px){.hero h1{font-size:19px}.hero .cta{width:100%}.hero .cta .btn{flex:1}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <div id="logo" class="mark">Σ</div>
+  <div class="grow"><h1 id="coName">سيجما للسيارات</h1><p id="coSub">المركبات المتوفرة الآن</p></div>
+  <div class="cta" id="cta"></div>
+</div></header>
+<div class="bar"><div class="wrap">
+  <div class="chips" id="chips" role="group" aria-label="نوع المركبة"></div>
+  <input id="q" type="search" placeholder="ابحث بالماركة أو الطراز أو السنة" aria-label="بحث">
+  <select id="sort" aria-label="الترتيب"><option value="new">الأحدث</option><option value="lo">السعر: الأقل</option><option value="hi">السعر: الأعلى</option><option value="yr">سنة الصنع</option></select>
+</div></div>
+<main><div class="wrap"><div class="grid" id="grid"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div></div></main>
+<footer class="site"><div class="wrap"><b id="fName">سيجما للسيارات</b><span id="fAddr"></span><span id="fUpd"></span></div></footer>
+<div class="lb" id="lb" hidden><img id="lbImg" alt=""><button class="x" id="lbX" aria-label="إغلاق">×</button><button class="p" id="lbP" aria-label="السابق">›</button><button class="n" id="lbN" aria-label="التالي">‹</button></div>
+<a class="btn wa fab" id="fab" hidden target="_blank" rel="noopener">واتساب</a>
+<script>
+(function(){
+var SRC='https://script.google.com/macros/s/AKfycbxx4jyQEZgGd9n7hZK3jBRWN1qtfotSsKtYcd-b7Xqh6iW2kHAdnQUwDjOFkEUpZyblCQ/exec';
+var D={items:[],meta:{}},kind='',lbList=[],lbI=0;
+var KINDS=[['','الكل'],['new','سيارات جديدة'],['used','سيارات مستعملة'],['truck','شاحنات'],['trailer','مقطورات']];
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function num(n){return Number(n).toLocaleString('en-US',{maximumFractionDigits:0})}
+function img(id,w){return 'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w'+(w||900)}
+function waLink(text){return 'https://wa.me/'+(D.meta.wa||'')+'?text='+encodeURIComponent(text)}
+function head(){var m=D.meta||{};
+  if(m.color)document.documentElement.style.setProperty('--acc',m.color);
+  if(m.name){document.getElementById('coName').textContent=m.name;document.getElementById('fName').textContent=m.name+(m.nameEn?' — '+m.nameEn:'');document.title=m.name+' — المركبات المتوفرة'}
+  if(m.logo){var l=document.getElementById('logo');l.outerHTML='<img class="logo" src="'+esc(m.logo)+'" alt="'+esc(m.name||'')+'">'}
+  document.getElementById('fAddr').textContent=m.address||'';
+  if(D.t)document.getElementById('fUpd').textContent='آخر تحديث: '+new Date(D.t).toLocaleDateString('ar-OM-u-nu-latn',{day:'numeric',month:'long',year:'numeric'});
+  var c='';if(m.wa)c+='<a class="btn wa" target="_blank" rel="noopener" href="'+waLink('السلام عليكم، أرغب بالاستفسار عن المركبات المتوفرة لديكم.')+'">واتساب</a>';
+  if(m.phone)c+='<a class="btn call" href="tel:'+esc(String(m.phone).replace(/\s/g,''))+'">اتصال</a>';
+  if(m.ig)c+='<a class="btn ghost" style="color:#fff;border-color:rgba(255,255,255,.3)" target="_blank" rel="noopener" href="https://instagram.com/'+esc(String(m.ig).replace('@',''))+'">إنستغرام</a>';
+  document.getElementById('cta').innerHTML=c;
+  if(m.wa){var f=document.getElementById('fab');f.href=waLink('السلام عليكم، أرغب بالاستفسار عن المركبات المتوفرة لديكم.');f.hidden=false}
+}
+function chips(){var n={};D.items.forEach(function(x){n[x.kind]=(n[x.kind]||0)+1});
+  document.getElementById('chips').innerHTML=KINDS.filter(function(k){return !k[0]||n[k[0]]}).map(function(k){return '<button class="chip" type="button" data-k="'+k[0]+'" aria-pressed="'+(kind===k[0])+'">'+k[1]+'<small>'+(k[0]?n[k[0]]:D.items.length)+'</small></button>'}).join('')}
+function list(){var q=document.getElementById('q').value.trim().toLowerCase(),s=document.getElementById('sort').value;
+  var L=D.items.filter(function(x){return (!kind||x.kind===kind)&&(!q||(x.title+' '+x.year+' '+x.kindAr+' '+(x.specs||[]).map(function(p){return p[1]}).join(' ')).toLowerCase().indexOf(q)>=0)});
+  L.sort(function(a,b){if(s==='lo')return (a.price||9e15)-(b.price||9e15);if(s==='hi')return (b.price||0)-(a.price||0);if(s==='yr')return (Number(b.year)||0)-(Number(a.year)||0);return (b.added||0)-(a.added||0)});
+  return L}
+function card(x){var ph=x.photos||[],m=D.meta||{};
+  var msg='السلام عليكم، أستفسر عن '+x.title+(x.year?' موديل '+x.year:'')+' (رقم '+String(x.id).slice(-5).toUpperCase()+') المعروضة في الكتالوج.';
+  return '<article class="card"><div class="ph">'+(ph.length?'<div class="strip">'+ph.map(function(id,i){return '<img loading="lazy" src="'+img(id)+'" data-id="'+x.id+'" data-i="'+i+'" alt="'+esc(x.title)+'">'}).join('')+'</div>':'<div class="none">الصور قريباً</div>')+
+    '<span class="tag">'+esc(x.kindAr)+'</span>'+(x.status==='reserved'?'<span class="tag res">محجوزة</span>':'')+(ph.length>1?'<span class="count">'+ph.length+' صور</span>':'')+'</div>'+
+    '<div class="body"><h2>'+esc(x.title)+'</h2><div class="meta">'+(x.year?'<span>'+esc(x.year)+'</span>':'')+(x.odo?'<span>'+num(String(x.odo).replace(/[^\d.]/g,''))+' كم</span>':'')+'</div>'+
+    ((x.specs||[]).length?'<ul class="specs'+(x.specs.length>4?' more':'')+'">'+x.specs.map(function(p){return '<li>'+esc(p[0])+': <b>'+esc(p[1])+'</b></li>'}).join('')+'</ul>'+(x.specs.length>4?'<button class="morebtn" type="button">كل المواصفات</button>':''):'')+
+    '<div class="foot">'+(x.price?'<div class="price">'+num(x.price)+' <small>'+esc(m.cur||'ر.ع.')+'</small></div>':'<div class="price ask">السعر عند التواصل</div>')+
+    (m.wa?'<a class="btn wa" target="_blank" rel="noopener" href="'+waLink(msg)+'">استفسر واتساب</a>':'')+'</div></div></article>'}
+function draw(){var L=list(),g=document.getElementById('grid');chips();
+  g.innerHTML=L.length?L.map(card).join(''):'<p class="empty" style="grid-column:1/-1">'+(D.items.length?'لا توجد مركبات تطابق البحث.':'لا توجد مركبات معروضة حالياً — تواصل معنا لمعرفة الجديد.')+'</p>'}
+document.getElementById('chips').addEventListener('click',function(e){var b=e.target.closest('[data-k]');if(!b)return;kind=b.getAttribute('data-k');draw()});
+document.getElementById('q').addEventListener('input',draw);document.getElementById('sort').addEventListener('change',draw);
+document.getElementById('grid').addEventListener('click',function(e){
+  var mb=e.target.closest('.morebtn');if(mb){var u=mb.previousElementSibling;u.classList.toggle('more');mb.textContent=u.classList.contains('more')?'كل المواصفات':'أقل';return}
+  var im=e.target.closest('img[data-id]');if(!im)return;var x=D.items.filter(function(y){return y.id===im.getAttribute('data-id')})[0];if(!x)return;lbList=x.photos;lbI=+im.getAttribute('data-i');lb()});
+function lb(){document.getElementById('lbImg').src=img(lbList[lbI],1600);document.getElementById('lb').hidden=false;document.getElementById('lbP').hidden=document.getElementById('lbN').hidden=lbList.length<2}
+document.getElementById('lbX').onclick=function(){document.getElementById('lb').hidden=true};
+document.getElementById('lb').addEventListener('click',function(e){if(e.target.id==='lb')document.getElementById('lb').hidden=true});
+document.getElementById('lbN').onclick=function(){lbI=(lbI+1)%lbList.length;lb()};document.getElementById('lbP').onclick=function(){lbI=(lbI-1+lbList.length)%lbList.length;lb()};
+document.addEventListener('keydown',function(e){if(document.getElementById('lb').hidden)return;if(e.key==='Escape')document.getElementById('lb').hidden=true;if(e.key==='ArrowLeft')document.getElementById('lbN').click();if(e.key==='ArrowRight')document.getElementById('lbP').click()});
+fetch(SRC+'?catalog=1',{cache:'no-store'}).then(function(r){return r.json()}).then(function(j){D={items:j.items||[],meta:j.meta||{},t:j.t};head();draw()})
+  .catch(function(){document.getElementById('grid').innerHTML='<p class="err" style="grid-column:1/-1">تعذّر تحميل الكتالوج الآن. حاول مرة أخرى بعد قليل.</p>'});
+})();
+</script>
+</body>
+</html>
