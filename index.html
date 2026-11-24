@@ -2368,6 +2368,8 @@ body.wiz .wz{display:block;padding:14px 16px 4px;border-bottom:1px solid var(--l
 .wz-top{display:flex;gap:8px;align-items:center}
 .wz-steps{list-style:none;margin:0;padding:0;display:flex;gap:6px;flex:1;overflow-x:auto;scrollbar-width:none}
 .wz-steps::-webkit-scrollbar{display:none}
+.wz-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.wz-steps li:not(:has(.cur)) button{padding:5px}
 .wz-steps button{display:flex;align-items:center;gap:6px;white-space:nowrap;font:inherit;font-size:.8rem;color:var(--muted);background:none;border:1px solid var(--line);border-radius:999px;padding:5px 10px 5px 8px;cursor:pointer}
 .wz-steps button i{font-style:normal;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--line);color:var(--fg);font-size:.72rem;font-weight:700}
 .wz-steps button.done i{background:var(--ui-accent);color:#fff}
@@ -2399,6 +2401,13 @@ body.wiz .wz-foot{display:flex;gap:8px;position:sticky;bottom:0;z-index:5;backgr
   body.wiz .jump{display:none!important}
 }
 @media print{.wz,.wz-foot,.wz-final,.wz-mode{display:none!important}}
+.numrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
+body.wiz .editor details.wz-solo>summary{display:none}
+body.wiz .editor details.wz-solo>.fields{padding-top:14px}
+.wz-check{margin:0 0 12px;padding:10px 12px;border-radius:10px;background:var(--warn-bg);color:var(--warn-fg);font-size:.85rem;line-height:1.7}
+.wz-check b{display:block;margin-bottom:2px}
+.wz-check button{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
+.wz-check.ok{background:none;color:var(--muted);padding:0}
 /* editor */
 .editor{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .note{background:var(--warn-bg);color:var(--warn-fg);font-size:.82rem;padding:10px 16px;line-height:1.6}
@@ -2952,9 +2961,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
       <p>عروض أسعار وفواتير وسندات وعقود بيع المركبات، مع سجل المبيعات والمخزون</p>
     </div>
     <div class="actions">
-      <button id="nextNo" class="btn" type="button">رقم جديد</button>
       <button id="newSale" class="btn" type="button">بيع جديد</button>
-      <button id="resetDemo" class="btn" type="button">استعادة المثال</button>
       <button id="printBtn" class="btn primary" type="button" hidden>حفظ PDF</button>
       <button id="dlCopy" class="btn primary" type="button" hidden>تنزيل نسخة للطباعة</button>
     </div>
@@ -3043,6 +3050,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
 
   <div id="pdfHintTop" class="banner info docs-only" hidden>
     <span>عند الضغط على <b>حفظ PDF</b> اختر الوجهة <b>«حفظ بتنسيق PDF»</b>، والورق <b>A4</b>، والهوامش <b>«بلا»</b>، والمقياس <b>«افتراضي / 100»</b>، وفعّل <b>«رسومات الخلفية»</b>. لا تختر «Microsoft Print to PDF» لأنها تقلل الدقة. الناتج ملف PDF نصّي حقيقي وليس صورة، ويبقى حاداً مهما كبّرته.</span>
+  <button id="pdfHintX" class="btn sm" type="button" aria-label="إخفاء التعليمات">فهمت</button>
   </div>
   <div id="pdfHintFrame" class="banner info docs-only" hidden>
     <span>لاستخراج <b>PDF نصّي عالي الجودة</b>: اضغط <b>«تنزيل نسخة للطباعة»</b>، ثم افتح الملف الذي يُنزَّل في Chrome أو Edge واضغط <b>حفظ PDF</b>. الملف يحمل كل بيانات هذه الصفقة.</span>
@@ -3070,7 +3078,6 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         <div class="wz-title"><small id="wzCount"></small><h2 id="wzTitle"></h2><p id="wzHint"></p></div>
         <div id="wzDocSlot"></div>
       </div>
-      <div class="note">بيانات العميل والمركبة والأسعار المعبأة مثال توضيحي فقط. بيانات البائع هي بيانات سيجما للسيارات، وكل ما تكتبه يُحفظ تلقائياً في متصفحك.</div>
 
       <details open id="aiBox" data-step="doc">
         <summary>التعبئة التلقائية من مستند</summary>
@@ -3123,6 +3130,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         <div class="fields">
           <p class="hint">بيانات العميل والمركبة مشتركة بين كل المستندات، فتكتبها مرة واحدة. تُحفظ الصفقة تلقائياً في السجل.</p>
           <span class="sync" id="syncState3"></span>
+          <button id="resetDemo" class="btn sm" type="button" style="width:max-content">ملء بيانات مثال للتجربة</button>
           <p class="ai-warn" id="backupNag" hidden></p>
           <div class="ai-row">
             <button id="dealSave" class="btn sm" type="button">حفظ الصفقة الحالية</button>
@@ -3225,7 +3233,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
       <details open data-step="doc">
         <summary id="metaSum">بيانات المستند</summary>
         <div class="fields">
-          <label class="f"><span id="docNoLbl">رقم المستند</span> <input id="docNo" dir="ltr"></label>
+          <div class="numrow"><label class="f"><span id="docNoLbl">رقم المستند</span> <input id="docNo" dir="ltr"></label><button id="nextNo" class="btn sm" type="button" title="إعطاء المستند الرقم التالي">رقم جديد</button></div>
           <div class="row2">
             <label class="f">التاريخ <input id="docDate" type="date" data-bind="date"></label>
             <label class="f" data-docs="invoice">تاريخ الاستحقاق <input id="docDue" type="date" data-bind="due"></label>
@@ -3671,7 +3679,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
       <div class="wz-final" id="wzFinal">
-        <p>المستند جاهز. راجعه في المعاينة، ثم احفظه أو أرسله للعميل.</p>
+        <div id="wzCheck" class="wz-check"></div>
         <div class="wz-final-btns"><button id="wzPrint" class="btn primary" type="button">حفظ PDF / طباعة</button><button id="wzNew" class="btn" type="button">بيع جديد</button></div>
       </div>
       <div class="wz-foot" id="wzFoot">
@@ -4343,10 +4351,12 @@ lastCfg=JSON.stringify(cfgData());
 if(S!==SEED){const t=isoDate(0);if(S.date!==t){S.date=t;if(S.due&&S.due<t)S.due=''}}
 
 let saveT;
-function save(){if(BLANKF)return;clearTimeout(saveT);saveT=setTimeout(()=>{S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S,(k,v)=>k==='company'?undefined:v))}catch(e){}
+function save(){if(BLANKF)return;clearTimeout(saveT);saveT=setTimeout(()=>{S.ts=Date.now();
   sellerStore();
   const cs=JSON.stringify(cfgData());if(lastCfg===null)lastCfg=cs;else if(cs!==lastCfg){lastCfg=cs;try{localStorage.setItem('sigma-cfg-ts',String(Date.now()))}catch(e){}markDirty('cfg','main')}
   if(S.dealId||S.client.name||S.veh.make||S.veh.vin){uniqueNums();storeDeal(false);autoSold()}
+  // written after storeDeal, so the saved state carries the deal id (a reload must not log the same deal twice)
+  try{localStorage.setItem(KEY,JSON.stringify(S,(k,v)=>k==='company'?undefined:v))}catch(e){}
   renderDeals();renderLog();},300)}
 
 /* ---------- deals ---------- */
@@ -4705,7 +4715,7 @@ function bodyInvoice(){
    '</tr></thead><tbody>'+rows+'</tbody></table></div>'+
    '<section class="sumrow">'+
      '<div class="stack">'+
-       (S.bank&&!isQ?'<div class="box">'+cap('bank')+ML(S.bank)+'</div>':'')+
+       (bankReal()&&!isQ?'<div class="box">'+cap('bank')+ML(bankReal())+'</div>':'')+
        tradeBox()+planBox()+
        (S.notes?'<div class="box">'+cap('notes')+ML(S.notes)+'</div>':'')+
      '</div>'+
@@ -5815,16 +5825,33 @@ function wzGo(k,opt){opt=opt||{};wzCur=k;wzSecs(k).forEach(d=>{if(d.id!=='aiBox'
 function wzStep(d){const L=wzList(),i=L.findIndex(x=>x.k===wzCur);if(wzCur==='settings'){wzGo('doc');return}
   const n=L[Math.max(0,Math.min(L.length-1,i+d))];if(n)wzGo(n.k,{focus:d>0})}
 function wzFields(){return wzSecs(wzCur).filter(d=>!d.hidden&&d.open).flatMap(d=>[...d.querySelectorAll('input:not([type=hidden]):not([type=file]),select,textarea')]).filter(i=>!i.disabled&&i.offsetParent!==null&&!i.closest('[hidden]'))}
+// the sample bank text (OM00 0000…) must never print as if it were a real account
+function bankPlaceholder(){return /OM00 0000 0000|ـــــ/.test(String(S.bank||''))}
+function bankReal(){return bankPlaceholder()?'':String(S.bank||'')}
+function wzMissing(){const d=S.doc,c=S.client||{},v=S.veh||{},m=[];
+  const money=['quote','invoice','contract'].includes(d),vehDocs=['quote','invoice','contract','delivery','purchase'];
+  if(!['letter','payment'].includes(d)&&!String(c.name||'').trim())m.push(['client',d==='purchase'?'اسم البائع للمعرض':'اسم العميل']);
+  if(vehDocs.includes(d)&&!(v.make||v.model||v.vin))m.push(['veh','بيانات المركبة']);
+  if(money&&!(S.items||[]).some(it=>Number(it.p)>0))m.push(['money','سعر المركبة']);
+  if(d==='receipt'&&!(Number((S.rc||{}).amount)>0))m.push(['money','المبلغ المقبوض']);
+  if(d==='payment'&&!(Number((S.pv||{}).amount)>0))m.push(['money','مبلغ الصرف']);
+  if(d==='payment'&&!String((S.pv||{}).payee||'').trim())m.push(['money','اسم المستفيد']);
+  if(d==='purchase'&&!(Number((S.pu||{}).amount)>0))m.push(['money','مبلغ الشراء']);
+  if(d==='invoice'&&bankPlaceholder())m.push(['doc','بيانات البنك (IBAN) في قسم البائع']);
+  return m.filter(x=>wzShown(x[0]))}
 function wzPaint(){
   document.body.classList.toggle('wiz',wzOn);
   const slot=document.getElementById('wzDocSlot');
   if(!wzOn){ed.querySelectorAll('details.wz-off').forEach(d=>d.classList.remove('wz-off'));if(docbarEl.parentNode===slot)docbarHome.after(docbarEl);slot.hidden=false;document.body.classList.remove('wz-last');document.getElementById('wzMode').textContent='عرض الخطوات (صفحة لكل قسم)';return}
   document.getElementById('wzMode').textContent='عرض كل الأقسام في صفحة واحدة';
   const L=wzList();if(wzCur!=='settings'&&!L.some(x=>x.k===wzCur))wzCur=(L.find(x=>WZ.findIndex(y=>y.k===x.k)>WZ.findIndex(y=>y.k===wzCur))||L[L.length-1]).k;
-  ed.querySelectorAll('details[data-step]').forEach(d=>d.classList.toggle('wz-off',d.dataset.step!==wzCur));
+  ed.querySelectorAll('details[data-step]').forEach(d=>{d.classList.toggle('wz-off',d.dataset.step!==wzCur);d.classList.remove('wz-solo')});
+  {const vis=wzSecs(wzCur).filter(d=>!d.hidden);if(vis.length===1&&wzCur!=='settings'&&wzCur!=='done'){vis[0].classList.add('wz-solo');vis[0].open=true}}
+  if(wzCur==='done'){const m=wzMissing(),el=document.getElementById('wzCheck');el.className='wz-check'+(m.length?'':' ok');
+    el.innerHTML=m.length?'<b>قبل الإصدار، ناقص:</b>'+m.map(x=>'<button type="button" data-wz="'+x[0]+'">'+esc(x[1])+'</button>').join(' · '):'المستند جاهز. راجعه في المعاينة، ثم احفظه أو أرسله للعميل.'}
   if(docbarEl.parentNode!==slot)slot.appendChild(docbarEl);slot.hidden=wzCur!=='doc';
   const i=L.findIndex(x=>x.k===wzCur),cur=wzCur==='settings'?WZ_SET:L[i];
-  document.getElementById('wzSteps').innerHTML=L.map((x,j)=>'<li><button type="button" data-wz="'+x.k+'" class="'+(x.k===wzCur?'cur':j<i?'done':'')+'"'+(x.k===wzCur?' aria-current="step"':'')+'><i>'+(j<i&&wzCur!=='settings'?'✓':(j+1))+'</i>'+x.t+'</button></li>').join('');
+  document.getElementById('wzSteps').innerHTML=L.map((x,j)=>'<li><button type="button" title="'+x.t+'" data-wz="'+x.k+'" class="'+(x.k===wzCur?'cur':j<i?'done':'')+'"'+(x.k===wzCur?' aria-current="step"':'')+'><i>'+(j<i&&wzCur!=='settings'?'✓':(j+1))+'</i>'+(x.k===wzCur?x.t:'<span class="wz-sr">'+x.t+'</span>')+'</button></li>').join('');
   const cb=document.querySelector('#wzSteps .cur');if(cb)cb.scrollIntoView({block:'nearest',inline:'center'});
   document.getElementById('wzSet').classList.toggle('cur',wzCur==='settings');
   document.getElementById('wzCount').textContent=wzCur==='settings'?'':'الخطوة '+(i+1)+' من '+L.length;
@@ -5837,6 +5864,7 @@ function wzPaint(){
   if(wzCur==='settings'){prev.hidden=true;next.hidden=false;next.textContent='رجوع إلى الخطوات ←'}
   else if(!last)next.textContent='التالي: '+L[i+1].t+' ←';
 }
+document.getElementById('wzCheck').addEventListener('click',e=>{const b=e.target.closest('[data-wz]');if(b)wzGo(b.dataset.wz,{focus:true})});
 document.getElementById('wzSteps').addEventListener('click',e=>{const b=e.target.closest('[data-wz]');if(b)wzGo(b.dataset.wz)});
 document.getElementById('wzSet').addEventListener('click',()=>wzGo(wzCur==='settings'?'doc':'settings'));
 document.getElementById('wzNext').addEventListener('click',()=>{if(wzCur==='settings')wzGo('doc');else wzStep(1)});
@@ -5850,6 +5878,7 @@ docbarEl.addEventListener('click',e=>{if(wzOn&&wzCur==='doc'&&e.target.closest('
 ed.addEventListener('keydown',e=>{if(!wzOn||e.key!=='Enter'||e.shiftKey||e.isComposing)return;const t=e.target;if(!t.matches('input,select')||t.matches('[type=checkbox],[type=radio],[type=file]'))return;
   const F=wzFields(),i=F.indexOf(t);if(i<0)return;e.preventDefault();t.dispatchEvent(new Event('change',{bubbles:true}));
   const n=F.slice(i+1).find(x=>!x.matches('[type=checkbox],[type=radio]'));if(n)n.focus();else wzStep(1)});
+document.getElementById('pdfHintX').addEventListener('click',()=>{document.getElementById('pdfHintTop').hidden=true;try{localStorage.setItem('sigma-hint-pdf','1')}catch(e){}});
 function newSaleReset(){
   const d=demo();
   if(S.client.name||S.veh.make||S.veh.vin)storeDeal(false);
@@ -5872,7 +5901,7 @@ document.getElementById('resetDemo').addEventListener('click',()=>ask('سيتم 
 const pb=document.getElementById('printBtn');
 let isTop=false;try{isTop=window.self===window.top}catch(e){isTop=false}
 if(isTop){
-  pb.hidden=false;document.getElementById('pdfHintTop').hidden=false;
+  pb.hidden=false;{let k='';try{k=localStorage.getItem('sigma-hint-pdf')}catch(e){}document.getElementById('pdfHintTop').hidden=k==='1'||matchMedia('(pointer:coarse)').matches}
   const base=document.title;
   pb.addEventListener('click',()=>{
     document.title=(S.nums[S.doc]||'document').replace(/[\\/:*?"<>|]/g,'-');
@@ -6835,11 +6864,16 @@ if(window.__VIEWER__){
   }
   return;
 }
+// clean up exact copies of one deal that an earlier version could log twice on reopening
+try{const seen={};[...STORE.deals].sort((a,b)=>(b.saved||0)-(a.saved||0)).forEach(r=>{const k=JSON.stringify(Object.assign({},r.data,{csig:''}));if(seen[k])delDeal(r.id);else seen[k]=1})}catch(e){}
 if(!FROM_SEED){
   if(FIRST_RUN){S.client.name='';S.veh.make='';S.veh.vin=''} // sample data is never stored in the log
-  if(!FIRST_RUN&&(S.client.name||S.client.nameEn||S.client.idNo||S.veh.make||S.veh.model||S.veh.vin||S.dealId)){newSaleReset();try{save()}catch(e){}}
+  // a reload in the middle of work (the phone closing the app in the background) resumes it; a later opening starts blank
+  const recent=Date.now()-(S.ts||0)<20*60*1000;
+  if(!FIRST_RUN&&!recent&&(S.client.name||S.client.nameEn||S.client.idNo||S.veh.make||S.veh.model||S.veh.vin||S.dealId)){newSaleReset();try{save()}catch(e){}}
   else if(FIRST_RUN){const n=S.nums;newSaleReset();S.nums=n}
 }
+try{const ab=document.getElementById('aiBox');ab.open=!document.getElementById('aiOn').hidden}catch(e){}
 wzCur='doc';fillEditor();render();
 (function(){let v='docs';try{v=localStorage.getItem('sigma-view')||'docs'}catch(e){}setView(['docs','log','inv'].includes(v)?v:'docs')})();
 renderLog();
