@@ -2776,6 +2776,19 @@ body.staff .staffbar{display:block}
 .paper.snap.nolh .lhImgEl{display:none!important}
 .exp-ed{width:100%;border-collapse:collapse}.exp-ed td{padding:2px}.exp-ed input{width:100%}
 .exp-ed td:first-child{width:9.5em}.exp-ed td:nth-child(3){width:7em}.exp-ed td:last-child{width:2.2em}
+.vpick{display:grid;gap:8px;padding:10px;border:1px dashed var(--line);border-radius:10px;background:var(--field)}
+.vpick-list{display:grid;gap:6px;max-height:300px;overflow:auto}
+.vpick-list button{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:start;font:inherit;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 8px;cursor:pointer}
+.vpick-list button:hover,.vpick-list button:focus-visible{border-color:var(--ui-accent);outline:none}
+.vpick-list button.on{border-color:var(--ui-accent);box-shadow:inset 0 0 0 1px var(--ui-accent)}
+.vpick-list .th{width:44px;height:34px;border-radius:6px;background:var(--line) center/cover no-repeat;display:grid;place-items:center;font-size:.7rem;color:var(--muted)}
+.vpick-list b{font-size:.88rem;font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vpick-list small{color:var(--muted);font-size:.74rem;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vpick-list .pr{font-family:var(--f-num);font-size:.8rem;text-align:end}
+.vpick-list .pr i{display:block;font-style:normal;font-size:.68rem;color:var(--muted)}
+.vpick-empty{font-size:.8rem;color:var(--muted);margin:0}
+.vpick-linked{margin:0;font-size:.8rem;color:var(--ui-accent);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.vpick-linked button{background:none;border:0;padding:0;font:inherit;color:var(--muted);text-decoration:underline;cursor:pointer}
 .invpick{border:1px solid var(--line,#ddd);border-radius:10px;padding:8px;display:grid;gap:6px}
 .invpick-list{max-height:260px;overflow:auto;display:grid;gap:2px}
 .invpick-list small{opacity:.7}
@@ -3356,6 +3369,11 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
       <details open data-step="veh">
         <summary>بيانات المركبة</summary>
         <div class="fields">
+          <div class="vpick" id="vPick" data-docs="quote invoice receipt payment delivery contract letter statement">
+            <label class="f">اختيار مركبة من المخزون (اختياري) <input id="vPickQ" type="search" dir="auto" autocomplete="off" placeholder="ابحث: الماركة، الطراز، الهيكل، اللوحة"></label>
+            <div id="vPickList" class="vpick-list" role="listbox" aria-label="مركبات المخزون"></div>
+            <p class="vpick-linked" id="vPickLinked" hidden></p>
+          </div>
           <label class="toggle" data-docs="invoice quote receipt payment"><input type="checkbox" id="vehOn"> إظهار بيانات المركبة في المستند</label>
           <div class="f">نوع المركبة
             <div class="seg" role="radiogroup">
@@ -5321,7 +5339,7 @@ function renderItemsEd(){
         '<button class="del" type="button" data-del="'+i+'" aria-label="حذف البند '+(i+1)+'">×</button>'+
       '</div></div>').join('')||'<p class="hint">لا توجد بنود.</p>';
 }
-function fillEditor(){try{clientMark();syncValidDays();syncCsig();renderStaff();ed.querySelectorAll('input[name=fsz]').forEach(r=>r.checked=r.value===fszOf())}catch(e){}
+function fillEditor(){try{clientMark();syncValidDays();vPickRender();syncCsig();renderStaff();ed.querySelectorAll('input[name=fsz]').forEach(r=>r.checked=r.value===fszOf())}catch(e){}
   ed.querySelectorAll('[data-bind]').forEach(el=>{const v=getP(el.dataset.bind);el.value=v==null?'':v});
   document.getElementById('docNo').value=S.nums[S.doc]||'';
   document.querySelectorAll('input[name=doc]').forEach(r=>r.checked=r.value===S.doc);
@@ -5819,7 +5837,7 @@ const docbarEl=document.querySelector('.docbar'),docbarHome=document.createComme
 function wzSecs(k){return [...ed.querySelectorAll('details[data-step="'+k+'"]')]}
 function wzShown(k){return k==='doc'||k==='done'||wzSecs(k).some(d=>!d.hidden)}
 function wzList(){return WZ.filter(x=>wzShown(x.k))}
-function wzGo(k,opt){opt=opt||{};wzCur=k;wzSecs(k).forEach(d=>{if(d.id!=='aiBox'&&!d.dataset.keep)d.open=true});
+function wzGo(k,opt){opt=opt||{};wzCur=k;if(k==='veh')try{vPickRender()}catch(e){}wzSecs(k).forEach(d=>{if(d.id!=='aiBox'&&!d.dataset.keep)d.open=true});
   if(k==='settings')wzSecs(k).forEach(d=>{if(d.id!=='dealsBox'&&d.id!=='staffBox')d.open=true});
   wzPaint();
   if(!opt.stay){const top=ed.getBoundingClientRect().top+scrollY-12;if(Math.abs(scrollY-top)>40||ed.getBoundingClientRect().top<0)scrollTo({top,behavior:'smooth'})}
@@ -6599,6 +6617,48 @@ invForm.addEventListener('click',e=>{
     invEditing.cost=Number(invEditing.cost)||0;invEditing.price=Number(invEditing.price)||0;invEditing.saved=Date.now();
     putInv(invEditing);invForm.hidden=true;invEditing=null;renderInv();renderMargin()}
 });
+/* choose the vehicle from stock inside the vehicle step; the rest of the document carries on from there */
+const INV_ST={available:'متاحة',reserved:'محجوزة',sold:'مباعة'};
+function vPickRender(){
+  const box=document.getElementById('vPickList');if(!box)return;const q=document.getElementById('vPickQ').value.trim().toLowerCase();
+  const L=STORE.inv.filter(x=>x.status!=='sold'||(q&&x.id===S.veh.invId)).filter(x=>!q||[invTitle(x),x.year,x.vin,x.plate,x.color,(KIND[x.kind]||{}).ar].join(' ').toLowerCase().includes(q))
+    .sort((a,b)=>(a.id===S.veh.invId?-1:0)-(b.id===S.veh.invId?-1:0)||(b.added||0)-(a.added||0));
+  const show=L.slice(0,q?20:5);
+  box.innerHTML=show.length?show.map(x=>{const ph=(x.photos||[])[0],src=ph&&(ph.src||PH.get(ph.id));
+    return '<button type="button" role="option" data-vpick="'+x.id+'" class="'+(x.id===S.veh.invId?'on':'')+'"><span class="th"'+(src?' style="background-image:url('+src+')"':'')+'>'+(src?'':esc((KIND[x.kind]||KIND.new).ar.split(' ')[0]))+'</span>'+
+      '<span><b dir="auto">'+esc(invTitle(x))+'</b><small>'+esc([(KIND[x.kind]||KIND.new).ar,x.color,x.vin?'هيكل …'+String(x.vin).slice(-6):'',x.plate].filter(Boolean).join(' · '))+'</small></span>'+
+      '<span class="pr">'+(Number(x.price)>0?num(x.price):'—')+'<i>'+esc(INV_ST[x.status]||'')+'</i></span></button>'}).join('')+(L.length>show.length?'<p class="vpick-empty">'+(L.length-show.length)+' مركبة أخرى — اكتب في البحث لتضييق القائمة.</p>':'')
+    :'<p class="vpick-empty">'+(STORE.inv.length?'لا توجد مركبة متاحة تطابق البحث. أدخل البيانات يدوياً بالأسفل.':'المخزون فارغ. أدخل بيانات المركبة يدوياً بالأسفل، أو أضف مركباتك من تبويب «المخزون».')+'</p>';
+  const ln=document.getElementById('vPickLinked'),x=S.veh.invId&&STORE.inv.find(r=>r.id===S.veh.invId);ln.hidden=!x;
+  if(x)ln.innerHTML='✓ مرتبطة بالمخزون: '+esc(invTitle(x))+' <button type="button" id="vPickUnlink">إلغاء الربط</button>';
+}
+function pickVehicle(id){
+  const x=STORE.inv.find(r=>r.id===id);if(!x)return;
+  const was=S.veh.invId&&STORE.inv.find(r=>r.id===S.veh.invId);
+  S.numFor=null; // changing your mind about the vehicle before issuing is the same sale, not a new one
+  S.veh=Object.assign(emptyVeh(x.kind),Object.fromEntries(VF.map(f=>[f.k,x[f.k]||''])),{kind:x.kind,invId:x.id});
+  if((x.photos||[]).length&&!(S.dl.photos||[]).length)S.dl.photos=JSON.parse(JSON.stringify(x.photos.slice(0,4)));
+  applyKindDefaults();S.vehOn=true;
+  let msg='تم اختيار «'+invTitle(x)+'» من المخزون وتعبئة بياناتها.';
+  if(['quote','invoice','contract'].includes(S.doc)){
+    const k=KIND[x.kind]||KIND.new;let d=[k.ar,x.truckType,x.make,x.model,x.trim,x.year?('موديل '+x.year):''].filter(Boolean).join(' ');if(x.vin)d+='\nرقم الهيكل: '+x.vin;
+    const used=S.items.filter(it=>String(it.d||'').trim()||Number(it.p)>0);
+    const prevLine=was&&S.items.find(it=>String(it.d||'').includes(was.vin||'\u0000')||String(it.d||'').startsWith([(KIND[was.kind]||KIND.new).ar,was.truckType,was.make].filter(Boolean).join(' ')));
+    if(!used.length){S.items=[{d,q:1,p:Number(x.price)||0}];msg+=' وأُضيفت كبند بسعرها '+num(x.price||0)+'.'}
+    else if(prevLine){prevLine.d=d;prevLine.q=1;prevLine.p=Number(x.price)||0;msg+=' واستُبدل بند المركبة السابقة.'}
+    else msg+=' البنود فيها بيانات سابقة فلم يتغيّر السعر.';
+  }
+  if(was&&was.id!==x.id&&was.status==='reserved'&&was.dealId===S.dealId)putInv(Object.assign({},was,{status:'available',dealId:'',saved:Date.now()}));
+  storeDeal(false);
+  if(['invoice','contract','receipt','delivery'].includes(S.doc)&&x.status==='available')putInv(Object.assign({},x,{status:'reserved',dealId:S.dealId,saved:Date.now()}));
+  document.getElementById('vPickQ').value='';fillEditor();render();save();setStatus(msg);
+  if(wzOn&&wzCur==='veh')setTimeout(()=>wzStep(1),350);
+}
+document.getElementById('vPickQ').addEventListener('input',vPickRender);
+document.getElementById('vPickQ').addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();e.stopPropagation();const b=document.querySelector('#vPickList [data-vpick]');if(b)pickVehicle(b.dataset.vpick)});
+document.getElementById('vPick').addEventListener('click',e=>{const b=e.target.closest('[data-vpick]');if(b){pickVehicle(b.dataset.vpick);return}
+  if(e.target.id==='vPickUnlink'){const x=STORE.inv.find(r=>r.id===S.veh.invId);if(x&&x.status==='reserved'&&x.dealId===S.dealId)putInv(Object.assign({},x,{status:'available',dealId:'',saved:Date.now()}));
+    delete S.veh.invId;vPickRender();renderMargin();save();setStatus('أُلغي ربط المركبة بالمخزون. بياناتها باقية في المستند.')}});
 function useInventory(id,fresh){
   const x=STORE.inv.find(r=>r.id===id);if(!x)return;
   const go=()=>{
