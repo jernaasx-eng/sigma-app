@@ -2363,6 +2363,42 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15
 .layout{display:grid;grid-template-columns:minmax(0,390px) minmax(0,1fr);gap:20px;align-items:start}
 @media (max-width:1100px){.layout{grid-template-columns:minmax(0,1fr)}}
 
+.wz,.wz-final,.wz-foot{display:none}
+body.wiz .wz{display:block;padding:14px 16px 4px;border-bottom:1px solid var(--line)}
+.wz-top{display:flex;gap:8px;align-items:center}
+.wz-steps{list-style:none;margin:0;padding:0;display:flex;gap:6px;flex:1;overflow-x:auto;scrollbar-width:none}
+.wz-steps::-webkit-scrollbar{display:none}
+.wz-steps button{display:flex;align-items:center;gap:6px;white-space:nowrap;font:inherit;font-size:.8rem;color:var(--muted);background:none;border:1px solid var(--line);border-radius:999px;padding:5px 10px 5px 8px;cursor:pointer}
+.wz-steps button i{font-style:normal;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--line);color:var(--fg);font-size:.72rem;font-weight:700}
+.wz-steps button.done i{background:var(--ui-accent);color:#fff}
+.wz-steps button.cur{border-color:var(--ui-accent);color:var(--fg);font-weight:600}
+.wz-steps button.cur i{background:var(--ui-accent);color:#fff}
+.wz-gear{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:1rem;cursor:pointer}
+.wz-gear.cur{border-color:var(--ui-accent);color:var(--ui-accent)}
+.wz-title{padding:14px 0 6px}
+.wz-title small{color:var(--ui-accent);font-weight:600;font-size:.76rem}
+.wz-title h2{margin:2px 0 4px;font-size:1.25rem}
+.wz-title p{margin:0;color:var(--muted);font-size:.84rem;line-height:1.6}
+body.wiz #wzDocSlot .docbar{margin:10px 0 6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+body.wiz #wzDocSlot .docbar label{min-width:0;padding:11px 14px}
+body.wiz .editor details.wz-off,body.wiz .editor .note{display:none!important}
+body.wiz .editor details[data-step]:not(.wz-off){border-top:0}
+body.wiz .editor details[data-step]:not(.wz-off)+details[data-step]:not(.wz-off){border-top:1px solid var(--line)}
+body.wiz .wz-final.on{display:block;padding:16px;border-top:1px solid var(--line)}
+.wz-final p{margin:0 0 10px;font-size:.9rem;color:var(--muted)}
+.wz-final-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wz-final-btns .btn{padding:12px;font-size:.95rem}
+body.wiz .wz-foot{display:flex;gap:8px;position:sticky;bottom:0;z-index:5;background:var(--panel);border-top:1px solid var(--line);padding:12px 16px}
+.wz-foot .btn{flex:1;padding:11px 12px;font-size:.92rem}
+.wz-foot #wzNext{flex:2}
+.wz-foot [hidden]{display:none}
+.wz-mode{padding:10px 16px 14px;text-align:center}
+.linkbtn{background:none;border:0;color:var(--muted);font:inherit;font-size:.8rem;text-decoration:underline;cursor:pointer}
+@media screen and (max-width:1100px){
+  body.wiz:not(.wz-last) .layout>.preview-wrap{display:none}
+  body.wiz .jump{display:none!important}
+}
+@media print{.wz,.wz-foot,.wz-final,.wz-mode{display:none!important}}
 /* editor */
 .editor{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .note{background:var(--warn-bg);color:var(--warn-fg);font-size:.82rem;padding:10px 16px;line-height:1.6}
@@ -3028,9 +3064,15 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
           <button id="lockOpen" class="btn sm" type="button">فتح القفل</button>
         </div>
       </div>
+      <div class="wz" id="wz">
+        <div class="wz-top"><ol class="wz-steps" id="wzSteps" aria-label="خطوات إصدار المستند"></ol>
+          <button id="wzSet" class="wz-gear" type="button" aria-label="الإعدادات" title="الإعدادات">⚙</button></div>
+        <div class="wz-title"><small id="wzCount"></small><h2 id="wzTitle"></h2><p id="wzHint"></p></div>
+        <div id="wzDocSlot"></div>
+      </div>
       <div class="note">بيانات العميل والمركبة والأسعار المعبأة مثال توضيحي فقط. بيانات البائع هي بيانات سيجما للسيارات، وكل ما تكتبه يُحفظ تلقائياً في متصفحك.</div>
 
-      <details open id="aiBox">
+      <details open id="aiBox" data-step="doc">
         <summary>التعبئة التلقائية من مستند</summary>
         <div class="fields">
           <p id="aiOff" class="ai-warn" hidden>التعبئة التلقائية غير متاحة هنا. افتح ملف المنشئ على جهازك في Chrome أو Edge وأدخل مفتاح API.</p>
@@ -3076,7 +3118,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details data-keep="1" id="dealsBox">
+      <details data-keep="1" id="dealsBox" data-step="settings">
         <summary>الصفقات والنسخ الاحتياطي</summary>
         <div class="fields">
           <p class="hint">بيانات العميل والمركبة مشتركة بين كل المستندات، فتكتبها مرة واحدة. تُحفظ الصفقة تلقائياً في السجل.</p>
@@ -3119,7 +3161,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details data-keep="1" id="staffBox">
+      <details data-keep="1" id="staffBox" data-step="settings">
         <summary>المندوبون والعمولات ووضع الموظف</summary>
         <div class="fields">
           <div class="own" style="display:grid;gap:8px">
@@ -3144,7 +3186,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details data-keep="1" open>
+      <details data-keep="1" open data-step="settings">
         <summary>اللغة والمظهر</summary>
         <div class="fields">
           <div class="f">حجم خط المستندات المطبوعة
@@ -3180,7 +3222,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open>
+      <details open data-step="doc">
         <summary id="metaSum">بيانات المستند</summary>
         <div class="fields">
           <label class="f"><span id="docNoLbl">رقم المستند</span> <input id="docNo" dir="ltr"></label>
@@ -3200,7 +3242,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details>
+      <details data-step="doc">
         <summary>البائع</summary>
         <div class="fields">
           <div class="f">البائع في هذه الصفقة
@@ -3269,7 +3311,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open>
+      <details open data-step="client">
         <summary>بيانات العميل</summary>
         <div class="fields">
           <div class="f cfind">البحث في العملاء السابقين
@@ -3301,7 +3343,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open>
+      <details open data-step="veh">
         <summary>بيانات المركبة</summary>
         <div class="fields">
           <label class="toggle" data-docs="invoice quote receipt payment"><input type="checkbox" id="vehOn"> إظهار بيانات المركبة في المستند</label>
@@ -3317,7 +3359,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open data-docs="invoice quote contract">
+      <details open data-docs="invoice quote contract" data-step="money">
         <summary>البنود والسعر</summary>
         <div class="fields">
           <p class="hint" data-docs="contract"><b>سعر المركبة في العقد = البند الأول.</b> أي بنود بعده تظهر في العقد كـ«إضافات»، والخصم والضريبة والمقايضة تنحسب في الإجمالي.</p>
@@ -3339,7 +3381,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open data-docs="receipt">
+      <details open data-docs="receipt" data-step="money">
         <summary>بيانات القبض</summary>
         <div class="fields">
           <label class="f">المبلغ المقبوض <input id="rcAmount" type="number" step="any" min="0" data-bind="rc.amount" data-num></label>
@@ -3368,7 +3410,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details data-docs="invoice quote contract">
+      <details data-docs="invoice quote contract" data-step="money">
         <summary>المقايضة (سيارة العميل)</summary>
         <div class="fields">
           <label class="toggle"><input type="checkbox" id="trOn"> العميل يسلّم مركبته ضمن الصفقة</label>
@@ -3388,7 +3430,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details data-docs="invoice quote contract">
+      <details data-docs="invoice quote contract" data-step="money">
         <summary>طريقة السداد</summary>
         <div class="fields">
           <div class="seg" role="radiogroup">
@@ -3425,7 +3467,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open data-docs="payment">
+      <details open data-docs="payment" data-step="money">
         <summary>بيانات الصرف</summary>
         <div class="fields">
           <label class="f">المبلغ المصروف <input id="pvAmount" type="number" step="any" min="0" data-bind="pv.amount" data-num></label>
@@ -3450,7 +3492,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open data-docs="contract">
+      <details open data-docs="contract" data-step="more">
         <summary>بيانات العقد</summary>
         <div class="fields" data-free style="padding-bottom:0">
           <button id="ctBlank" class="btn sm" type="button">طباعة نسخة فارغة للتعبئة اليدوية</button>
@@ -3477,7 +3519,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open data-docs="contract transfer letter">
+      <details open data-docs="contract transfer letter" data-step="more">
         <summary>الورق الرسمي (الليتر هيد)</summary>
         <div class="fields">
           <p class="hint">البائع الحالي: <b id="lhSellerName"></b>. لكل بائع ورقه الرسمي الخاص، ويتبدل تلقائياً عند تغيير البائع.</p>
@@ -3494,7 +3536,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open data-docs="letter">
+      <details open data-docs="letter" data-step="more">
         <summary>بيانات الرسالة الرسمية</summary>
         <div class="fields">
           <label class="f">نوع الرسالة
@@ -3516,7 +3558,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open data-docs="purchase">
+      <details open data-docs="purchase" data-step="money">
         <summary>بيانات شراء المركبة</summary>
         <div class="fields">
           <p class="hint">اكتب بيانات البائع في قسم «العميل» وبيانات المركبة في قسم «المركبة».</p>
@@ -3538,7 +3580,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open data-docs="transfer">
+      <details open data-docs="transfer" data-step="more">
         <summary>بيانات خطاب نقل المركبة</summary>
         <div class="fields">
           <label class="f">المرسل إليه <input id="trTo" data-bind="tr.to" dir="rtl"></label>
@@ -3548,7 +3590,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open data-docs="delivery">
+      <details open data-docs="delivery" data-step="veh">
         <summary>صور المركبة عند التسليم</summary>
         <div class="fields">
           <div class="phgrid" id="dlPhGrid"></div>
@@ -3557,7 +3599,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open data-docs="delivery">
+      <details open data-docs="delivery" data-step="more">
         <summary>بيانات التسليم</summary>
         <div class="fields">
           <div class="row2">
@@ -3575,7 +3617,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details data-docs="invoice quote">
+      <details data-docs="invoice quote" data-step="more">
         <summary>الدفع والملاحظات</summary>
         <div class="fields">
           <label class="f">بيانات الدفع / الحساب البنكي <textarea id="bank" data-bind="bank" dir="auto" rows="3"></textarea></label>
@@ -3583,7 +3625,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details open>
+      <details open data-step="more">
         <summary>الإقرار العام</summary>
         <div class="fields">
           <label class="toggle"><input type="checkbox" id="clauseOn"> إظهار الإقرار في كل المستندات</label>
@@ -3593,7 +3635,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details data-keep="1" id="shareBox">
+      <details data-keep="1" id="shareBox" data-step="done">
         <summary>إرسال للعميل ورمز QR</summary>
         <div class="fields">
           <label class="toggle"><input type="checkbox" id="qrOn"> إظهار رمز QR على المستندات</label>
@@ -3622,12 +3664,21 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         </div>
       </details>
 
-      <details>
+      <details data-step="settings">
         <summary>عبارة الختام</summary>
         <div class="fields">
           <label class="f">تظهر أسفل كل المستندات <input id="thanks" data-bind="thanks" dir="auto"></label>
         </div>
       </details>
+      <div class="wz-final" id="wzFinal">
+        <p>المستند جاهز. راجعه في المعاينة، ثم احفظه أو أرسله للعميل.</p>
+        <div class="wz-final-btns"><button id="wzPrint" class="btn primary" type="button">حفظ PDF / طباعة</button><button id="wzNew" class="btn" type="button">بيع جديد</button></div>
+      </div>
+      <div class="wz-foot" id="wzFoot">
+        <button id="wzPrev" class="btn" type="button">→ السابق</button>
+        <button id="wzNext" class="btn primary" type="button">التالي ←</button>
+      </div>
+      <div class="wz-mode"><button id="wzMode" class="linkbtn" type="button">عرض كل الأقسام في صفحة واحدة</button></div>
     </aside>
 
     <main class="preview-wrap">
@@ -5117,7 +5168,7 @@ const paper=document.getElementById('paper');
 function render(){
   const keepLang=S.lang;if(S.doc==='contract'||S.doc==='transfer'||S.doc==='letter')S.lang='ar';
   try{renderInner()}finally{S.lang=keepLang}
-  fitNames();paginate();syncLetterEd();renderClientHist();applyLock();
+  fitNames();paginate();syncLetterEd();renderClientHist();applyLock();try{wzPaint()}catch(e){}
   const dg=document.getElementById('dlPhGrid');if(dg&&S.doc==='delivery'){const h=phGridHtml((S.dl.photos||[]).slice(0,4),true);if(dg.innerHTML!==h)dg.innerHTML=h}
   const sl=document.querySelector('#sellerSeg input:checked');if(sl&&sl.parentNode.lastChild.nodeValue!==sellerLabel(S.seller))sl.parentNode.lastChild.nodeValue=sellerLabel(S.seller);
 }
@@ -5741,6 +5792,64 @@ function clientEdited(f){
   if(cleared)setStatus('مشترٍ جديد: مُسحت بيانات المشتري السابق (الاسم الإنجليزي، البطاقة، الهاتف، العنوان).');
 }
 function clientMark(){const c=S.client||{},F=S.clFor=S.clFor||{},nm=firstName(c.name);CL_OWN.forEach(k=>{const v=c[k]||'';if(v&&(!F[k]||F[k].v!==v))F[k]={v,nm}})}
+/* ---------- step-by-step editor: one section at a time, then on to the next ---------- */
+var wzCur='doc',wzOn=true;
+try{wzOn=localStorage.getItem('sigma-wizard')!=='off'}catch(e){}
+const WZ=[
+  {k:'doc',t:'المستند',h:'اختر نوع المستند. يمكنك أيضاً تعبئة بيانات العميل والمركبة تلقائياً من صورة البطاقة أو الملكية.'},
+  {k:'client',t:'العميل',h:'اكتب اسم العميل أو اختره من العملاء السابقين، ثم أكمل بياناته.'},
+  {k:'veh',t:'المركبة',h:'اختر نوع المركبة، ثم أدخل بياناتها أو اختر مركبة من المخزون.'},
+  {k:'money',t:'السعر والدفع',h:'أدخل السعر والمبالغ وطريقة السداد.'},
+  {k:'more',t:'تفاصيل المستند',h:'البيانات الخاصة بهذا المستند.'},
+  {k:'done',t:'المراجعة والإرسال',h:'راجع المستند، ثم احفظه PDF أو أرسله للعميل.'}];
+const WZ_SET={k:'settings',t:'الإعدادات',h:'الصفقات والنسخ الاحتياطي، المندوبون، اللغة والمظهر، وعبارة الختام.'};
+const docbarEl=document.querySelector('.docbar'),docbarHome=document.createComment('docbar');docbarEl.before(docbarHome);
+function wzSecs(k){return [...ed.querySelectorAll('details[data-step="'+k+'"]')]}
+function wzShown(k){return k==='doc'||k==='done'||wzSecs(k).some(d=>!d.hidden)}
+function wzList(){return WZ.filter(x=>wzShown(x.k))}
+function wzGo(k,opt){opt=opt||{};wzCur=k;wzSecs(k).forEach(d=>{if(d.id!=='aiBox'&&!d.dataset.keep)d.open=true});
+  if(k==='settings')wzSecs(k).forEach(d=>{if(d.id!=='dealsBox'&&d.id!=='staffBox')d.open=true});
+  wzPaint();
+  if(!opt.stay){const top=ed.getBoundingClientRect().top+scrollY-12;if(Math.abs(scrollY-top)>40||ed.getBoundingClientRect().top<0)scrollTo({top,behavior:'smooth'})}
+  if(opt.focus){const f=wzFields()[0];if(f&&matchMedia('(pointer:fine)').matches)setTimeout(()=>f.focus({preventScroll:true}),250)}}
+function wzStep(d){const L=wzList(),i=L.findIndex(x=>x.k===wzCur);if(wzCur==='settings'){wzGo('doc');return}
+  const n=L[Math.max(0,Math.min(L.length-1,i+d))];if(n)wzGo(n.k,{focus:d>0})}
+function wzFields(){return wzSecs(wzCur).filter(d=>!d.hidden&&d.open).flatMap(d=>[...d.querySelectorAll('input:not([type=hidden]):not([type=file]),select,textarea')]).filter(i=>!i.disabled&&i.offsetParent!==null&&!i.closest('[hidden]'))}
+function wzPaint(){
+  document.body.classList.toggle('wiz',wzOn);
+  const slot=document.getElementById('wzDocSlot');
+  if(!wzOn){ed.querySelectorAll('details.wz-off').forEach(d=>d.classList.remove('wz-off'));if(docbarEl.parentNode===slot)docbarHome.after(docbarEl);slot.hidden=false;document.body.classList.remove('wz-last');document.getElementById('wzMode').textContent='عرض الخطوات (صفحة لكل قسم)';return}
+  document.getElementById('wzMode').textContent='عرض كل الأقسام في صفحة واحدة';
+  const L=wzList();if(wzCur!=='settings'&&!L.some(x=>x.k===wzCur))wzCur=(L.find(x=>WZ.findIndex(y=>y.k===x.k)>WZ.findIndex(y=>y.k===wzCur))||L[L.length-1]).k;
+  ed.querySelectorAll('details[data-step]').forEach(d=>d.classList.toggle('wz-off',d.dataset.step!==wzCur));
+  if(docbarEl.parentNode!==slot)slot.appendChild(docbarEl);slot.hidden=wzCur!=='doc';
+  const i=L.findIndex(x=>x.k===wzCur),cur=wzCur==='settings'?WZ_SET:L[i];
+  document.getElementById('wzSteps').innerHTML=L.map((x,j)=>'<li><button type="button" data-wz="'+x.k+'" class="'+(x.k===wzCur?'cur':j<i?'done':'')+'"'+(x.k===wzCur?' aria-current="step"':'')+'><i>'+(j<i&&wzCur!=='settings'?'✓':(j+1))+'</i>'+x.t+'</button></li>').join('');
+  const cb=document.querySelector('#wzSteps .cur');if(cb)cb.scrollIntoView({block:'nearest',inline:'center'});
+  document.getElementById('wzSet').classList.toggle('cur',wzCur==='settings');
+  document.getElementById('wzCount').textContent=wzCur==='settings'?'':'الخطوة '+(i+1)+' من '+L.length;
+  document.getElementById('wzTitle').textContent=cur.k==='client'&&S.doc==='purchase'?'البائع للمعرض':cur.k==='client'&&S.doc==='payment'?'المستفيد':cur.t;
+  document.getElementById('wzHint').textContent=cur.h;
+  const last=wzCur==='done';document.body.classList.toggle('wz-last',last);
+  document.getElementById('wzFinal').classList.toggle('on',last);
+  const prev=document.getElementById('wzPrev'),next=document.getElementById('wzNext');
+  prev.hidden=wzCur==='doc';next.hidden=last;
+  if(wzCur==='settings'){prev.hidden=true;next.hidden=false;next.textContent='رجوع إلى الخطوات ←'}
+  else if(!last)next.textContent='التالي: '+L[i+1].t+' ←';
+}
+document.getElementById('wzSteps').addEventListener('click',e=>{const b=e.target.closest('[data-wz]');if(b)wzGo(b.dataset.wz)});
+document.getElementById('wzSet').addEventListener('click',()=>wzGo(wzCur==='settings'?'doc':'settings'));
+document.getElementById('wzNext').addEventListener('click',()=>{if(wzCur==='settings')wzGo('doc');else wzStep(1)});
+document.getElementById('wzPrev').addEventListener('click',()=>wzStep(-1));
+document.getElementById('wzMode').addEventListener('click',()=>{wzOn=!wzOn;try{localStorage.setItem('sigma-wizard',wzOn?'on':'off')}catch(e){}if(wzOn)wzGo('doc');else{wzPaint();ed.querySelectorAll('details[data-step]').forEach(d=>{if(d.dataset.step!=='settings'&&d.dataset.step!=='done'&&d.id!=='aiBox')d.open=true})}});
+document.getElementById('wzPrint').addEventListener('click',()=>{const a=document.getElementById('printBtn'),b=document.getElementById('dlCopy');(!a.hidden?a:!b.hidden?b:a).click()});
+document.getElementById('wzNew').addEventListener('click',()=>document.getElementById('newSale').click());
+// choosing a document type moves straight on
+docbarEl.addEventListener('click',e=>{if(wzOn&&wzCur==='doc'&&e.target.closest('label')&&e.target.matches('input[name=doc]'))setTimeout(()=>{if(wzCur==='doc')wzStep(1)},260)});
+// Enter moves to the next field, and from the last field to the next step
+ed.addEventListener('keydown',e=>{if(!wzOn||e.key!=='Enter'||e.shiftKey||e.isComposing)return;const t=e.target;if(!t.matches('input,select')||t.matches('[type=checkbox],[type=radio],[type=file]'))return;
+  const F=wzFields(),i=F.indexOf(t);if(i<0)return;e.preventDefault();t.dispatchEvent(new Event('change',{bubbles:true}));
+  const n=F.slice(i+1).find(x=>!x.matches('[type=checkbox],[type=radio]'));if(n)n.focus();else wzStep(1)});
 function newSaleReset(){
   const d=demo();
   if(S.client.name||S.veh.make||S.veh.vin)storeDeal(false);
@@ -5755,7 +5864,7 @@ function newSaleReset(){
   S.cancelled={};S.cancelWhy={};S.locked={};S.pv=Object.assign({},d.pv);S.pu=Object.assign({},d.pu);S.lt=Object.assign({},d.lt);S.ct=Object.assign({},d.ct,{payTerms:''});
   S.trade=Object.assign({},d.trade);S.plan=Object.assign({},d.plan,{start:isoDate(30)});
 }
-document.getElementById('newSale').addEventListener('click',()=>ask('ستُحفظ الصفقة الحالية في السجل، ثم تبدأ صفقة جديدة فارغة بأرقام مستندات جديدة. بيانات البائع تبقى كما هي.',newSaleReset));
+document.getElementById('newSale').addEventListener('click',()=>ask('ستُحفظ الصفقة الحالية في السجل، ثم تبدأ صفقة جديدة فارغة بأرقام مستندات جديدة. بيانات البائع تبقى كما هي.',()=>{newSaleReset();if(wzOn)wzGo('doc')}));
 document.getElementById('resetDemo').addEventListener('click',()=>ask('سيتم استبدال كل البيانات بالمثال. رقم السجل والرقم الضريبي والشعار لسيجما تبقى محفوظة.',()=>{
   const keepSellers=S.sellers;S=demo();S.sellers=keepSellers;S.seller='sigma';migrate();
 }));
@@ -6204,7 +6313,7 @@ function renderLog(){
 document.getElementById('logSearch').addEventListener('input',renderLog);
 function openDeal(id){const rec=STORE.deals.find(x=>x.id===id);if(!rec)return;if(S.dealId&&S.dealId!==id)storeDeal(false);
   S.numFor=null;S.csig='';S.clFor={};Object.assign(S,JSON.parse(JSON.stringify(rec.data)));S.dealId=rec.id;migrate();if(S.company.theme!=null)S.theme=S.company.theme;if(S.company.lhMode)S.lhMode=S.company.lhMode;if(S.company.thanks!==undefined)S.thanks=S.company.thanks;fillEditor();render();save();setView('docs')}
-document.getElementById('logTable').addEventListener('click',e=>{const b=e.target.closest('[data-lopen]');if(b)openDeal(b.dataset.lopen)});
+document.getElementById('logTable').addEventListener('click',e=>{const b=e.target.closest('[data-lopen]');if(b){openDeal(b.dataset.lopen);if(wzOn)wzGo('doc',{stay:true})}});
 
 /* ---------- printable report of the rows currently shown in the log ---------- */
 function reportHtml(){
@@ -6731,7 +6840,7 @@ if(!FROM_SEED){
   if(!FIRST_RUN&&(S.client.name||S.client.nameEn||S.client.idNo||S.veh.make||S.veh.model||S.veh.vin||S.dealId)){newSaleReset();try{save()}catch(e){}}
   else if(FIRST_RUN){const n=S.nums;newSaleReset();S.nums=n}
 }
-fillEditor();render();
+wzCur='doc';fillEditor();render();
 (function(){let v='docs';try{v=localStorage.getItem('sigma-view')||'docs'}catch(e){}setView(['docs','log','inv'].includes(v)?v:'docs')})();
 renderLog();
 })();
