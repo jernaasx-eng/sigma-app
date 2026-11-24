@@ -2408,6 +2408,7 @@ body.wiz .editor details.wz-solo>.fields{padding-top:14px}
 .wz-check b{display:block;margin-bottom:2px}
 .wz-check button{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
 .wz-check.ok{background:none;color:var(--muted);padding:0}
+.paper .vdays{font-size:.85em;font-weight:500;opacity:.8;margin-inline-start:2px}
 /* editor */
 .editor{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .note{background:var(--warn-bg);color:var(--warn-fg);font-size:.82rem;padding:10px 16px;line-height:1.6}
@@ -3237,6 +3238,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
           <div class="row2">
             <label class="f">التاريخ <input id="docDate" type="date" data-bind="date"></label>
             <label class="f" data-docs="invoice">تاريخ الاستحقاق <input id="docDue" type="date" data-bind="due"></label>
+            <label class="f" data-docs="quote">مدة صلاحية العرض (أيام) <input id="docValidDays" type="number" min="1" step="1" inputmode="numeric" placeholder="14"></label>
             <label class="f" data-docs="quote">صالح حتى <input id="docValid" type="date" data-bind="validUntil"></label>
             <label class="f" data-docs="delivery">وقت الاستلام <input id="docTime" type="time" data-bind="time"></label>
           </div>
@@ -4381,7 +4383,7 @@ function markDirty(c,id,del){
   if(del){delete SQ[c][id];SQ.del[c+'/'+id]=Date.now()}else{SQ[c][id]=1;delete SQ.del[c+'/'+id]}
   sqSave();clearTimeout(syncT);syncT=setTimeout(()=>syncNow(),4000);
 }
-function cfgData(){return {sellers:S.sellers,lhMode:S.lhMode,staff:S.staff||[],catPrice:!!S.catPrice,fsz:fszOf()}}
+function cfgData(){return {sellers:S.sellers,lhMode:S.lhMode,staff:S.staff||[],catPrice:!!S.catPrice,fsz:fszOf(),validDays:Number(S.validDays)||14}}
 function upsert(arr,rec){const i=arr.findIndex(x=>x.id===rec.id);if(i>=0)arr[i]=rec;else arr.unshift(rec)}
 function loadDeals(){return STORE.deals}
 function putDeal(rec){upsert(STORE.deals,rec);persistLocal();cloudWrite('deals',rec.id,rec);markDirty('deals',rec.id)}
@@ -4668,7 +4670,7 @@ function metaBlock(){
   let r=rowL(D.noAr,D.noEn,N(S.nums[S.doc]||'—'));
   r+=(S.doc==='delivery'&&S.time)?rowL('التاريخ والوقت','Date & Time',N(fmtDate(S.date)+'  '+S.time)):row('date',N(fmtDate(S.date)));
   if(S.doc==='invoice')r+=row('due',N(fmtDate(S.due)));
-  if(S.doc==='quote'&&S.validUntil)r+=row('valid',N(fmtDate(S.validUntil)));
+  if(S.doc==='quote'&&S.validUntil){const vd=validDaysOf();r+=row('valid',N(fmtDate(S.validUntil))+(vd>0?' <small class="vdays">('+daysAr(vd)+(S.lang==='ar'?'':' · '+vd+' day'+(vd>1?'s':''))+')</small>':''))}
   const rf=eff().ref;if(['receipt','payment','delivery'].includes(S.doc)&&rf)r+=row('ref',N(rf));
   if(S.doc==='delivery'&&(S.dl.odo||S.dl.fuel)){
     const parts=[S.dl.odo?N(S.dl.odo+' km'):'',S.dl.fuel?T(S.dl.fuel):''].filter(Boolean).join(' · ');
@@ -5319,7 +5321,7 @@ function renderItemsEd(){
         '<button class="del" type="button" data-del="'+i+'" aria-label="حذف البند '+(i+1)+'">×</button>'+
       '</div></div>').join('')||'<p class="hint">لا توجد بنود.</p>';
 }
-function fillEditor(){try{clientMark();syncCsig();renderStaff();ed.querySelectorAll('input[name=fsz]').forEach(r=>r.checked=r.value===fszOf())}catch(e){}
+function fillEditor(){try{clientMark();syncValidDays();syncCsig();renderStaff();ed.querySelectorAll('input[name=fsz]').forEach(r=>r.checked=r.value===fszOf())}catch(e){}
   ed.querySelectorAll('[data-bind]').forEach(el=>{const v=getP(el.dataset.bind);el.value=v==null?'':v});
   document.getElementById('docNo').value=S.nums[S.doc]||'';
   document.querySelectorAll('input[name=doc]').forEach(r=>r.checked=r.value===S.doc);
@@ -5828,6 +5830,15 @@ function wzFields(){return wzSecs(wzCur).filter(d=>!d.hidden&&d.open).flatMap(d=
 // the sample bank text (OM00 0000…) must never print as if it were a real account
 function bankPlaceholder(){return /OM00 0000 0000|ـــــ/.test(String(S.bank||''))}
 function bankReal(){return bankPlaceholder()?'':String(S.bank||'')}
+/* quotation validity in days: the days and the end date stay in step */
+function addDays(iso,n){const d=new Date((iso||isoDate(0))+'T00:00:00');d.setDate(d.getDate()+Number(n||0));return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function validDaysOf(){if(!S.validUntil||!S.date)return 0;return Math.round((new Date(S.validUntil+'T00:00:00')-new Date(S.date+'T00:00:00'))/864e5)}
+function daysAr(n){return n===1?'يوم واحد':n===2?'يومان':n<=10?n+' أيام':n+' يوماً'}
+function syncValidDays(){const el=document.getElementById('docValidDays');if(!el)return;const v=validDaysOf();if(document.activeElement!==el)el.value=v>0?v:''}
+ed.addEventListener('input',e=>{const t=e.target;
+  if(t.id==='docValidDays'){const n=parseInt(t.value,10);if(!(n>0))return;S.validDays=n;S.validUntil=addDays(S.date,n);document.getElementById('docValid').value=S.validUntil;render();save()}
+  else if(t.id==='docValid'){const v=validDaysOf();if(v>0)S.validDays=v;syncValidDays()}
+  else if(t.id==='docDate'&&S.validUntil){S.validUntil=addDays(S.date,Number(S.validDays)||14);document.getElementById('docValid').value=S.validUntil;syncValidDays();render();save()}});
 function wzMissing(){const d=S.doc,c=S.client||{},v=S.veh||{},m=[];
   const money=['quote','invoice','contract'].includes(d),vehDocs=['quote','invoice','contract','delivery','purchase'];
   if(!['letter','payment'].includes(d)&&!String(c.name||'').trim())m.push(['client',d==='purchase'?'اسم البائع للمعرض':'اسم العميل']);
@@ -5889,7 +5900,7 @@ function newSaleReset(){
   S.items=[{d:'',q:1,p:0}];S.discount=0;S.advance=0;S.ref='';
   S.rc={amount:0,method:'cash',refNo:'',bankName:'',chqDate:'',purpose:'',totalPrice:0,prevPaid:0,notes:''};
   S.dl=Object.assign({},d.dl,{odo:'',notes:'',by:S.dl.by});
-  S.nums=next;S.date=isoDate(0);S.due=isoDate(7);S.validUntil=isoDate(14);
+  S.nums=next;S.date=isoDate(0);S.due=isoDate(7);S.validUntil=addDays(S.date,Number(S.validDays)||14);
   S.cancelled={};S.cancelWhy={};S.locked={};S.pv=Object.assign({},d.pv);S.pu=Object.assign({},d.pu);S.lt=Object.assign({},d.lt);S.ct=Object.assign({},d.ct,{payTerms:''});
   S.trade=Object.assign({},d.trade);S.plan=Object.assign({},d.plan,{start:isoDate(30)});
 }
@@ -6302,7 +6313,6 @@ function dueList(days){
     if(owed>0)out.push({r,c:d.client||{},owed,date:first.date,late:first.date<todayISO(),n,inv:(d.nums||{}).invoice||''})});
   return out.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
 }
-function addDays(iso,n){const d=new Date((iso||todayISO())+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
 function reminderText(x){
   const co=S.company.nameAr||S.company.nameEn||'',cu=(CUR[S.currency]||CUR.OMR).ar;
   return 'السلام عليكم '+(x.c.name||'')+'،\n'+(x.late?'نود تذكيركم بأن لديكم أقساطاً متأخرة':'نود تذكيركم بموعد القسط القادم')+' على الفاتورة رقم '+x.inv+'.\nالمبلغ المستحق: '+num(x.owed)+' '+cu+(x.late?' (منذ '+fmtDate(x.date)+')':' بتاريخ '+fmtDate(x.date))+'.\nشاكرين تعاونكم — '+co;
@@ -6738,7 +6748,7 @@ async function syncNow(manual){
       if(!o||recTs(r)>recTs(o)){upsert(STORE[c],r);ch=true;if(c==='deals'&&r.id===S.dealId)cur=r}}));
     (j.del||[]).forEach(d=>{if(d.c!=='deals'&&d.c!=='inv')return;const n=STORE[d.c].length;STORE[d.c]=STORE[d.c].filter(x=>!(x.id===d.id&&recTs(x)<=d.ts));if(STORE[d.c].length!==n)ch=true});
     const cf=(j.cfg||[])[0];
-    if(cf&&cf.data&&cf.data.sellers&&(cf.saved||0)>cfgTs()&&!SQ.cfg.main){S.sellers=cf.data.sellers;if(Array.isArray(cf.data.staff))S.staff=cf.data.staff;if(cf.data.catPrice!=null)S.catPrice=!!cf.data.catPrice;if(cf.data.fsz)S.fsz=cf.data.fsz;lsSet('sigma-cfg-ts',String(cf.saved));migrate();sellerLoad();lastCfg=JSON.stringify(cfgData());cfgCh=true}
+    if(cf&&cf.data&&cf.data.sellers&&(cf.saved||0)>cfgTs()&&!SQ.cfg.main){S.sellers=cf.data.sellers;if(Array.isArray(cf.data.staff))S.staff=cf.data.staff;if(cf.data.catPrice!=null)S.catPrice=!!cf.data.catPrice;if(cf.data.fsz)S.fsz=cf.data.fsz;if(cf.data.validDays)S.validDays=cf.data.validDays;lsSet('sigma-cfg-ts',String(cf.saved));migrate();sellerLoad();lastCfg=JSON.stringify(cfgData());cfgCh=true}
     sqSave();lsSet('sigma-sync-last',String(j.now||Date.now()));
     if(ch){['deals','inv'].forEach(c=>STORE[c].sort((a,b)=>recTs(b)-recTs(a)));persistLocal()}
     if(cur){Object.assign(S,JSON.parse(JSON.stringify(cur.data)));migrate()}
