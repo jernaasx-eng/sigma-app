@@ -4242,13 +4242,13 @@ function demo(){return{
 }}
 function fresh(){const d=demo();return d}
 
-let S;
+let S,FROM_SEED=false,FIRST_RUN=false;
 try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
 if(!S||!S.nums||!Array.isArray(S.items))S=null;
 // a print copy carries its deal in a seed; use it unless this browser already has newer edits
 let SEED=null;try{const el=document.getElementById('seed');if(el)SEED=JSON.parse(el.textContent)}catch(e){SEED=null}
-if(SEED&&SEED.nums&&(!S||(SEED.ts||0)>(S.ts||0)))S=SEED;
-if(!S)S=demo();
+if(SEED&&SEED.nums&&(!S||(SEED.ts||0)>(S.ts||0))){S=SEED;FROM_SEED=true}
+if(!S){S=demo();FIRST_RUN=true}
 const SELLER_KEEP=['bank','thanks','lhMode','theme','seal'];
 // what belongs to the seller travels with the seller: mirrored into the profile on every save, loaded back on switch
 function sellerStore(){const c=S.company;if(!c)return;SELLER_KEEP.forEach(k=>{c[k]=S[k]});if(c.custom)c.mark=String(c.nameEn||c.nameAr||'•').trim().charAt(0)||'•'}
@@ -5258,7 +5258,7 @@ function renderItemsEd(){
         '<button class="del" type="button" data-del="'+i+'" aria-label="حذف البند '+(i+1)+'">×</button>'+
       '</div></div>').join('')||'<p class="hint">لا توجد بنود.</p>';
 }
-function fillEditor(){try{syncCsig();renderStaff();ed.querySelectorAll('input[name=fsz]').forEach(r=>r.checked=r.value===fszOf())}catch(e){}
+function fillEditor(){try{clientMark();syncCsig();renderStaff();ed.querySelectorAll('input[name=fsz]').forEach(r=>r.checked=r.value===fszOf())}catch(e){}
   ed.querySelectorAll('[data-bind]').forEach(el=>{const v=getP(el.dataset.bind);el.value=v==null?'':v});
   document.getElementById('docNo').value=S.nums[S.doc]||'';
   document.querySelectorAll('input[name=doc]').forEach(r=>r.checked=r.value===S.doc);
@@ -5361,6 +5361,7 @@ document.querySelector('.docbar').addEventListener('change',e=>{
 ed.addEventListener('input',e=>{
   const el=e.target;
   if(el.id==='docNo'){S.nums[S.doc]=el.value}
+  else if(el.dataset.bind&&/^client\./.test(el.dataset.bind)){setP(el.dataset.bind,el.value);clientEdited(el.dataset.bind.slice(7))}
   else if(el.dataset.bind){setP(el.dataset.bind,el.hasAttribute('data-num')?(parseFloat(el.value)||0):el.value);
     if(el.id==='plFst'){const k={submitted:'fsub',approved:'fapp',paid:'fpaid'}[el.value];if(k&&!S.plan[k]){S.plan[k]=todayISO();document.getElementById({fsub:'plFsub',fapp:'plFapp',fpaid:'plFpaid'}[k]).value=S.plan[k]}}
     if(/^plan\.f/.test(el.dataset.bind))syncPlan()}
@@ -5405,7 +5406,7 @@ ed.addEventListener('click',e=>{
   const od=e.target.closest('[data-dopen]');
   if(od){const rec=loadDeals().find(x=>x.id===od.dataset.dopen);if(!rec)return;
     if(S.dealId)storeDeal(false);
-    S.numFor=null;S.csig='';Object.assign(S,JSON.parse(JSON.stringify(rec.data)));S.dealId=rec.id;fillEditor();render();save();return}
+    S.numFor=null;S.csig='';S.clFor={};Object.assign(S,JSON.parse(JSON.stringify(rec.data)));S.dealId=rec.id;fillEditor();render();save();return}
   const dd=e.target.closest('[data-ddel]');
   if(dd){const id=dd.dataset.ddel,rec=loadDeals().find(x=>x.id===id);
     ask('حذف الصفقة «'+(rec?rec.name:'')+'» من السجل؟ المستند المفتوح لا يتأثر.',()=>{delDeal(id);if(S.dealId===id)S.dealId='';renderDeals();renderLog()});return}
@@ -5727,12 +5728,25 @@ let catT=null;function catAuto(){if(lsGet('sigma-cat-on')!=='1'||!syncOn())retur
 document.getElementById('catPub').addEventListener('click',()=>publishCatalog(false));
 document.getElementById('catPrice').addEventListener('change',e=>{S.catPrice=e.target.checked;save();catAuto()});
 function fszOf(){const v=String(S.fsz||'2');return /^[123]$/.test(v)?v:'2'}
+const CL_OWN=['nameEn','idNo','cr','phone','address','vat'];
+const CL_IN={nameEn:'clNameEn',idNo:'clId',cr:'clCr',phone:'clPhone',address:'clAddr',vat:'clVat'};
+function firstName(n){return String(n||'').trim().split(/\s+/)[0]||''}
+function clientEdited(f){
+  const c=S.client,F=S.clFor=S.clFor||{},nm=firstName(c.name);
+  if(f!=='name'){F[f]={v:c[f]||'',nm};return}
+  let cleared=0;
+  CL_OWN.forEach(k=>{const r=F[k],v=c[k]||'';if(!v)return;
+    if(r&&r.v===v&&differs(r.nm,nm)){c[k]='';const i=document.getElementById(CL_IN[k]);if(i)i.value='';delete F[k];cleared++}  // still the old buyer's value
+    else if(!r||r.v!==v)F[k]={v,nm}});  // filled by a scan, a customer pick or an older version: it belongs to this buyer
+  if(cleared)setStatus('مشترٍ جديد: مُسحت بيانات المشتري السابق (الاسم الإنجليزي، البطاقة، الهاتف، العنوان).');
+}
+function clientMark(){const c=S.client||{},F=S.clFor=S.clFor||{},nm=firstName(c.name);CL_OWN.forEach(k=>{const v=c[k]||'';if(v&&(!F[k]||F[k].v!==v))F[k]={v,nm}})}
 function newSaleReset(){
   const d=demo();
   if(S.client.name||S.veh.make||S.veh.vin)storeDeal(false);
   const next={};for(const k of Object.keys(S.nums))next[k]=bump(maxNo(k));
   S.dealId='';S.payments=[];S.numFor=null;S.csig='';S.sp=SM.on?SM.who:'';
-  S.client={type:'individual',name:'',cr:'',idNo:'',address:'',vat:'',phone:''};
+  S.client={type:'individual',name:'',nameEn:'',cr:'',idNo:'',address:'',vat:'',phone:''};S.clFor={};
   S.veh=emptyVeh(S.veh.kind);applyKindDefaults();
   S.items=[{d:'',q:1,p:0}];S.discount=0;S.advance=0;S.ref='';
   S.rc={amount:0,method:'cash',refNo:'',bankName:'',chqDate:'',purpose:'',totalPrice:0,prevPaid:0,notes:''};
@@ -6189,7 +6203,7 @@ function renderLog(){
 ['logMonth','logStatus'].forEach(id=>document.getElementById(id).addEventListener('change',renderLog));
 document.getElementById('logSearch').addEventListener('input',renderLog);
 function openDeal(id){const rec=STORE.deals.find(x=>x.id===id);if(!rec)return;if(S.dealId&&S.dealId!==id)storeDeal(false);
-  S.numFor=null;S.csig='';Object.assign(S,JSON.parse(JSON.stringify(rec.data)));S.dealId=rec.id;migrate();if(S.company.theme!=null)S.theme=S.company.theme;if(S.company.lhMode)S.lhMode=S.company.lhMode;if(S.company.thanks!==undefined)S.thanks=S.company.thanks;fillEditor();render();save();setView('docs')}
+  S.numFor=null;S.csig='';S.clFor={};Object.assign(S,JSON.parse(JSON.stringify(rec.data)));S.dealId=rec.id;migrate();if(S.company.theme!=null)S.theme=S.company.theme;if(S.company.lhMode)S.lhMode=S.company.lhMode;if(S.company.thanks!==undefined)S.thanks=S.company.thanks;fillEditor();render();save();setView('docs')}
 document.getElementById('logTable').addEventListener('click',e=>{const b=e.target.closest('[data-lopen]');if(b)openDeal(b.dataset.lopen)});
 
 /* ---------- printable report of the rows currently shown in the log ---------- */
@@ -6711,6 +6725,11 @@ if(window.__VIEWER__){
     let tries=0;const iv=setInterval(()=>{if(boot()||++tries>40){clearInterval(iv);if(!started)txt.textContent='لا توجد بيانات مستند في هذا الرابط. امسح رمز QR المطبوع على المستند مرة أخرى. ['+String(location.hash||'').length+']'}},100);
   }
   return;
+}
+if(!FROM_SEED){
+  if(FIRST_RUN){S.client.name='';S.veh.make='';S.veh.vin=''} // sample data is never stored in the log
+  if(!FIRST_RUN&&(S.client.name||S.client.nameEn||S.client.idNo||S.veh.make||S.veh.model||S.veh.vin||S.dealId)){newSaleReset();try{save()}catch(e){}}
+  else if(FIRST_RUN){const n=S.nums;newSaleReset();S.nums=n}
 }
 fillEditor();render();
 (function(){let v='docs';try{v=localStorage.getItem('sigma-view')||'docs'}catch(e){}setView(['docs','log','inv'].includes(v)?v:'docs')})();
