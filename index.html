@@ -2380,6 +2380,8 @@ body.wiz .wz{display:block;padding:14px 16px 4px;border-bottom:1px solid var(--l
 .wz-title{padding:14px 0 6px}
 .wz-title small{color:var(--ui-accent);font-weight:600;font-size:.76rem}
 .wz-title h2{margin:2px 0 4px;font-size:1.25rem}
+.wz-title p.lockhint{color:var(--warn-fg);background:var(--warn-bg);padding:8px 10px;border-radius:8px}
+.editor.locked details:not([data-keep]) .fields{cursor:not-allowed}
 .wz-title p{margin:0;color:var(--muted);font-size:.84rem;line-height:1.6}
 body.wiz #wzDocSlot .docbar{margin:10px 0 6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 body.wiz #wzDocSlot .docbar label{min-width:0;padding:11px 14px}
@@ -2388,6 +2390,7 @@ body.wiz .editor details[data-step]:not(.wz-off){border-top:0}
 body.wiz .editor details[data-step]:not(.wz-off)+details[data-step]:not(.wz-off){border-top:1px solid var(--line)}
 body.wiz .wz-final.on{display:block;padding:16px;border-top:1px solid var(--line)}
 .wz-final p{margin:0 0 10px;font-size:.9rem;color:var(--muted)}
+.wz-nextdocs{margin:0 0 12px}.wz-nextdocs p{margin:0 0 6px;font-size:.82rem;color:var(--muted)}.wz-nextdocs div{display:flex;flex-wrap:wrap;gap:6px}
 .wz-final-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .wz-final-btns .btn{padding:12px;font-size:.95rem}
 body.wiz .wz-foot{display:flex;gap:8px;position:sticky;bottom:0;z-index:5;background:var(--panel);border-top:1px solid var(--line);padding:12px 16px}
@@ -2441,7 +2444,8 @@ textarea{resize:vertical;min-height:62px;line-height:1.55}
 .items-ed{display:grid;gap:10px}
 .item-ed{display:grid;gap:6px;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--field)}
 .item-ed textarea{min-height:44px;background:var(--panel)}
-.item-ed .nums{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) 34px;gap:6px;align-items:end}
+.item-ed .nums{display:grid;grid-template-columns:minmax(0,.6fr) minmax(0,1.2fr) minmax(0,1.2fr) 34px;gap:6px;align-items:end}
+.item-ed .nums:not(:has([data-f=pi])){grid-template-columns:minmax(0,.6fr) minmax(0,1.4fr) 34px}
 .item-ed .nums input{background:var(--panel)}
 .item-ed .idx{font-size:.75rem;color:var(--muted)}
 .del{border:1px solid var(--line);background:var(--panel);color:var(--danger);border-radius:7px;height:36px;cursor:pointer;font-size:1.1rem}
@@ -2756,6 +2760,7 @@ input:disabled{opacity:.65}
 .rsheet h1+.rs{margin-bottom:2mm}
 .pdfbar{position:fixed;inset-inline:12px;bottom:12px;z-index:60;background:var(--panel,#fff);color:inherit;border:1px solid var(--line,#ddd);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:12px 14px;display:grid;gap:8px;max-width:520px;margin-inline:auto}
 .pdfbar p{margin:0;font-size:14px}
+.pdfmore{display:inline}.pdfmore summary{display:inline;cursor:pointer;text-decoration:underline;font-size:.9em}.pdfmore[open]{display:block;margin-top:4px}
 body.staff .own{display:none!important}
 #smOff:not([hidden]),#smIsOn:not([hidden]){display:grid;gap:8px}
 .staff-list{display:grid;gap:6px}.staff-list .sr{display:grid;grid-template-columns:1.4fr 1.3fr .8fr auto;gap:6px;align-items:center}
@@ -3063,7 +3068,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
   </div>
 
   <div id="pdfHintTop" class="banner info docs-only" hidden>
-    <span>عند الضغط على <b>حفظ PDF</b> اختر الوجهة <b>«حفظ بتنسيق PDF»</b>، والورق <b>A4</b>، والهوامش <b>«بلا»</b>، والمقياس <b>«افتراضي / 100»</b>، وفعّل <b>«رسومات الخلفية»</b>. لا تختر «Microsoft Print to PDF» لأنها تقلل الدقة. الناتج ملف PDF نصّي حقيقي وليس صورة، ويبقى حاداً مهما كبّرته.</span>
+    <span>عند الحفظ اختر الوجهة <b>«حفظ بتنسيق PDF»</b>. <details class="pdfmore"><summary>إعدادات أفضل جودة</summary>الورق <b>A4</b>، والهوامش <b>«بلا»</b>، والمقياس <b>«افتراضي / 100»</b>، وفعّل <b>«رسومات الخلفية»</b>. لا تختر «Microsoft Print to PDF» لأنها تقلل الدقة.</details></span>
   <button id="pdfHintX" class="btn sm" type="button" aria-label="إخفاء التعليمات">فهمت</button>
   </div>
   <div id="pdfHintFrame" class="banner info docs-only" hidden>
@@ -3392,7 +3397,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         <div class="fields">
           <p class="hint" data-docs="contract"><b>سعر المركبة في العقد = البند الأول.</b> أي بنود بعده تظهر في العقد كـ«إضافات»، والخصم والضريبة والمقايضة تنحسب في الإجمالي.</p>
           <div class="items-ed" id="itemsEd"></div>
-          <div class="ai-row"><button id="addItem" class="btn" type="button">+ إضافة بند</button><button id="vehItem" class="btn" type="button">إضافة المركبة كبند</button><button id="invPickBtn" class="btn" type="button">+ مركبات من المخزون</button></div>
+          <div class="ai-row"><button id="addItem" class="btn" type="button">+ إضافة بند</button><button id="vehItem" class="btn" type="button" title="يضيف المركبة المكتوبة في خطوة «المركبة» كبند">+ المركبة المختارة كبند</button><button id="invPickBtn" class="btn" type="button" title="لعرض سعر أو فاتورة فيها أكثر من مركبة">+ عدة مركبات من المخزون</button></div>
           <div id="invPick" class="invpick" hidden>
             <div class="ai-row"><input id="invPickQ" type="search" placeholder="بحث: النوع، الموديل، الشاصي" dir="auto" style="flex:1"><select id="invPickK"><option value="">الكل</option><option value="truck">شاحنات</option><option value="trailer">مقطورات</option><option value="new">جديدة</option><option value="used">مستعملة</option></select></div>
             <div id="invPickList" class="invpick-list"></div>
@@ -3426,13 +3431,13 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
             <label class="f" id="rcBankWrap">البنك <input id="rcBank" data-bind="rc.bankName" dir="auto"></label>
           </div>
           <label class="f" id="rcChqDateWrap">تاريخ الشيك <input id="rcChqDate" type="date" data-bind="rc.chqDate"></label>
-          <label class="f">وذلك عن <textarea id="rcPurpose" data-bind="rc.purpose" dir="auto" rows="2"></textarea></label>
+          <label class="f">وذلك عن <textarea id="rcPurpose" data-bind="rc.purpose" dir="auto" rows="2" placeholder="يُكتب تلقائياً: دفعة من ثمن المركبة"></textarea></label>
           <div class="row2">
             <label class="f">إجمالي قيمة الصفقة <input id="rcTotal" type="number" step="any" min="0" data-bind="rc.totalPrice" data-num></label>
             <label class="f">المدفوع سابقاً <input id="rcPrev" type="number" step="any" min="0" data-bind="rc.prevPaid" data-num></label>
           </div>
           <p class="hint" id="rcLinkHint">مع الربط التلقائي يُؤخذ الإجمالي من الفاتورة، والمدفوع سابقاً من الدفعات المسجّلة أدناه.</p>
-          <button id="nextPayment" class="btn sm" type="button">تسجيل هذه الدفعة وبدء سند قبض جديد</button>
+          <button id="nextPayment" class="btn sm" type="button">حفظ هذه الدفعة وإصدار سند قبض آخر</button>
           <div class="pay-list" id="payList"></div>
           <label class="f">ملاحظات <textarea id="rcNotes" data-bind="rc.notes" dir="auto" rows="2"></textarea></label>
         </div>
@@ -3700,6 +3705,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
       </details>
       <div class="wz-final" id="wzFinal">
         <div id="wzCheck" class="wz-check"></div>
+        <div id="wzNextDocs" class="wz-nextdocs" hidden></div>
         <div class="wz-final-btns"><button id="wzPrint" class="btn primary" type="button">حفظ PDF / طباعة</button><button id="wzNew" class="btn" type="button">بيع جديد</button></div>
       </div>
       <div class="wz-foot" id="wzFoot">
@@ -4313,7 +4319,7 @@ function demo(){return{
   items:[{d:'سيارة BYD Leopard 7 Ultra جديدة موديل 2026',q:1,p:14800}],
   discount:0,advance:0,
   bank:'البنك: ـــــــ\nIBAN: OM00 0000 0000 0000 0000 000\nاسم الحساب: سيجما للسيارات',
-  notes:'الأسعار تشمل ضريبة القيمة المضافة كما هو موضح.\nيُستحق الدفع خلال 7 أيام من تاريخ الإصدار.',
+  notes:'الإجمالي المستحق يشمل ضريبة القيمة المضافة كما هو موضح أعلاه.\nيُستحق الدفع خلال 7 أيام من تاريخ الإصدار.',
   thanks:'شكراً لاختياركم سيجما للسيارات — Thank you for choosing Sigma Cars',
   clauseOn:true,clauseAr:CLAUSE_AR,clauseEn:CLAUSE_EN,sealOn:true,
   rc:{amount:3000,method:'transfer',refNo:'TRX-558201',bankName:'بنك مسقط',chqDate:'',purpose:'دفعة مقدمة من ثمن سيارة BYD Leopard 7 Ultra موديل 2026',totalPrice:15540,prevPaid:0,notes:''},
@@ -4639,7 +4645,7 @@ function eff(){
     ref:al?S.nums.invoice:S.ref,
     total:al?Math.round(invoiceTotals().net*1000)/1000:(Number(S.rc.totalPrice)||0),
     prev:al?paidBefore():(Number(S.rc.prevPaid)||0),
-    purpose:S.rc.purpose||(al&&(v.make||v.model)?'دفعة من ثمن '+vdesc:'')
+    purpose:S.rc.purpose||((v.make||v.model)?'دفعة من ثمن '+vdesc:'')
   };
 }
 function invoiceTotals(){return totalsOf(S)}
@@ -4702,6 +4708,7 @@ function vehicleBlock(compact,extraRows){
   const short=fs.filter(f=>!f.ml&&!f.wide&&String(v[f.k]||'').trim());
   const longs=fs.filter(f=>(f.ml||f.wide)&&String(v[f.k]||'').trim());
   if(!short.length&&!longs.length)return '';
+  if(!BLANKF&&!['make','model','vin','year','plate','trim','truckType','trlType'].some(k=>String(v[k]||'').trim()))return ''; // only defaults (warranty…), no vehicle yet
   const cell=f=>{const val=v[f.k];return rowL(f.ar,f.en,f.date?N(fmtDate(val)):(f.num?N(val):(f.ml?ML(val):T(val))))};
   const half=Math.ceil(short.length/2);
   const g1=short.slice(0,half).map(cell).join(''),g2=short.slice(half).map(cell).join('');
@@ -4753,7 +4760,7 @@ function bodyReceipt(){
   if((rc.method==='cheque'||rc.method==='transfer')&&rc.bankName)rows+=rowL('البنك','Bank',T(rc.bankName));
   if(rc.method==='cheque'&&rc.chqDate)rows+=rowL('تاريخ الشيك','Cheque Date',N(fmtDate(rc.chqDate)));
   const total=E.total,prev=E.prev;
-  const summary=total>0?'<div class="totals">'+cap('rcSummary')+'<div class="tg">'+trow('dealTotal',N(num(total)))+(prev>0?trow('prevPaid',N('−'+num(prev))):'')+trow('thisPay',N('−'+num(amt)),true)+'</div>'+grandRow(L.remain.ar,L.remain.en,total-prev-amt)+'</div>':'';
+  const summary=total>0?'<div class="totals">'+cap('rcSummary')+'<div class="tg">'+trow('dealTotal',N(num(total)))+(prev>0?trow('prevPaid',N('−'+num(prev))):'')+trow('thisPay',N((amt>0?'−':'')+num(amt)),true)+'</div>'+grandRow(L.remain.ar,L.remain.en,total-prev-amt)+'</div>':'';
   const vshort=S.vehOn?vehicleBlock(true):'';
   const amtLab=S.lang==='bi'?'<span>'+L.rcSum.ar+'</span><span class="en">'+L.rcSum.en+'</span>':'<span'+(S.lang==='en'?' class="en"':'')+'>'+one(L.rcSum.ar,L.rcSum.en)+'</span>';
   return '<section class="amtbox blk"><div class="lab">'+amtLab+'</div><div class="val"><div class="big">'+N(num(amt))+'<span class="c">'+esc(S.lang==='en'?c.en:c.ar+(S.lang==='bi'?' / '+c.en:''))+'</span></div>'+wordsHtml(amt,false)+'</div></section>'+
@@ -5329,18 +5336,20 @@ function renderChecksEd(){
   checksEl.innerHTML=CHECKS.map((c,i)=>'<label><input type="checkbox" id="ck-'+i+'" data-ck="'+i+'"'+(S.dl.checks[i]?' checked':'')+'>'+c[0]+'</label>').join('');
 }
 const itemsEd=document.getElementById('itemsEd');
+function vr(){return Number(S.vatRate)||0}
 function renderItemsEd(){
   itemsEd.innerHTML=S.items.map((it,i)=>
     '<div class="item-ed" data-i="'+i+'">'+
       '<label class="f"><span class="idx">البند '+(i+1)+' — الوصف</span><textarea id="it-d-'+i+'" data-f="d" dir="auto" rows="2">'+esc(it.d)+'</textarea></label>'+
       '<div class="nums">'+
-        '<label class="f">الكمية<input id="it-q-'+i+'" type="number" step="any" min="0" data-f="q" value="'+esc(it.q)+'"></label>'+
-        '<label class="f">سعر الوحدة<input id="it-p-'+i+'" type="number" step="any" min="0" data-f="p" value="'+esc(it.p)+'"></label>'+
+        '<label class="f">الكمية<input id="it-q-'+i+'" type="number" step="any" min="0" data-f="q" placeholder="1" value="'+(Number(it.q)?esc(it.q):'')+'"></label>'+
+        '<label class="f">سعر الوحدة قبل الضريبة<input id="it-p-'+i+'" type="number" step="any" min="0" data-f="p" placeholder="0" value="'+(Number(it.p)?esc(Math.round(it.p*1000)/1000):'')+'"></label>'+
+        (vr()>0?'<label class="f">أو السعر شامل الضريبة<input id="it-pi-'+i+'" type="number" step="any" min="0" data-f="pi" placeholder="0" value="'+(Number(it.p)?esc(Math.round(it.p*(1+vr()/100)*1000)/1000):'')+'"></label>':'')+
         '<button class="del" type="button" data-del="'+i+'" aria-label="حذف البند '+(i+1)+'">×</button>'+
       '</div></div>').join('')||'<p class="hint">لا توجد بنود.</p>';
 }
 function fillEditor(){try{clientMark();syncValidDays();vPickRender();syncCsig();renderStaff();ed.querySelectorAll('input[name=fsz]').forEach(r=>r.checked=r.value===fszOf())}catch(e){}
-  ed.querySelectorAll('[data-bind]').forEach(el=>{const v=getP(el.dataset.bind);el.value=v==null?'':v});
+  ed.querySelectorAll('[data-bind]').forEach(el=>{const v=getP(el.dataset.bind);el.value=v==null||(el.hasAttribute('data-num')&&Number(v)===0)?'':v;if(el.hasAttribute('data-num')&&!el.placeholder)el.placeholder='0'});
   document.getElementById('docNo').value=S.nums[S.doc]||'';
   document.querySelectorAll('input[name=doc]').forEach(r=>r.checked=r.value===S.doc);
   ed.querySelectorAll('input[name=lang]').forEach(r=>r.checked=r.value===S.lang);
@@ -5470,7 +5479,9 @@ ed.addEventListener('input',e=>{
   else if(el.name==='ctype'){S.client.type=el.value;syncVisibility()}
   else if(el.name==='rcm'){S.rc.method=el.value;syncVisibility()}
   else if(el.name==='vkind'){S.veh.kind=el.value;applyKindDefaults();renderVehEd();renderSvcEd()}
-  else if(el.dataset.f){const i=+el.closest('.item-ed').dataset.i;S.items[i][el.dataset.f]=el.dataset.f==='d'?el.value:(parseFloat(el.value)||0)}
+  else if(el.dataset.f==='pi'){const row=el.closest('.item-ed'),i=+row.dataset.i,v=parseFloat(el.value)||0;S.items[i].p=v/(1+vr()/100);const o=row.querySelector('[data-f=p]');if(o)o.value=v?Math.round(S.items[i].p*1000)/1000:''}
+  else if(el.dataset.f){const row=el.closest('.item-ed'),i=+row.dataset.i;S.items[i][el.dataset.f]=el.dataset.f==='d'?el.value:(parseFloat(el.value)||0);
+    if(el.dataset.f==='p'){const o=row.querySelector('[data-f=pi]');if(o)o.value=S.items[i].p?Math.round(S.items[i].p*(1+vr()/100)*1000)/1000:''}}
   else return;
   syncLink();syncPlan();render();renderMargin();renderShare();save();
 });
@@ -5837,7 +5848,9 @@ const docbarEl=document.querySelector('.docbar'),docbarHome=document.createComme
 function wzSecs(k){return [...ed.querySelectorAll('details[data-step="'+k+'"]')]}
 function wzShown(k){return k==='doc'||k==='done'||wzSecs(k).some(d=>!d.hidden)}
 function wzList(){return WZ.filter(x=>wzShown(x.k))}
-function wzGo(k,opt){opt=opt||{};wzCur=k;if(k==='veh')try{vPickRender()}catch(e){}wzSecs(k).forEach(d=>{if(d.id!=='aiBox'&&!d.dataset.keep)d.open=true});
+function wzGo(k,opt){opt=opt||{};
+  try{if(wzOn&&!opt.fromPop&&k!==wzCur)history.pushState({wz:k},'')}catch(e){}
+  wzCur=k;if(k==='veh')try{vPickRender()}catch(e){}wzSecs(k).forEach(d=>{if(d.id!=='aiBox'&&!d.dataset.keep)d.open=true});
   if(k==='settings')wzSecs(k).forEach(d=>{if(d.id!=='dealsBox'&&d.id!=='staffBox')d.open=true});
   wzPaint();
   if(!opt.stay){const top=ed.getBoundingClientRect().top+scrollY-12;if(Math.abs(scrollY-top)>40||ed.getBoundingClientRect().top<0)scrollTo({top,behavior:'smooth'})}
@@ -5868,6 +5881,11 @@ function wzMissing(){const d=S.doc,c=S.client||{},v=S.veh||{},m=[];
   if(d==='purchase'&&!(Number((S.pu||{}).amount)>0))m.push(['money','مبلغ الشراء']);
   if(d==='invoice'&&bankPlaceholder())m.push(['doc','بيانات البنك (IBAN) في قسم البائع']);
   return m.filter(x=>wzShown(x[0]))}
+const NEXT_DOCS={quote:[['invoice','تحويل إلى فاتورة'],['contract','عقد بيع']],invoice:[['receipt','سند قبض للدفعة'],['contract','عقد بيع'],['delivery','سند استلام المركبة']],
+  contract:[['receipt','سند قبض'],['delivery','سند استلام المركبة']],receipt:[['delivery','سند استلام المركبة'],['statement','كشف حساب']],delivery:[['statement','كشف حساب']],purchase:[['payment','سند صرف لقيمة الشراء']]};
+const NEXT_STEP={invoice:'done',contract:'more',receipt:'money',delivery:'more',statement:'done',payment:'money'};
+function wzNextDocs(){const el=document.getElementById('wzNextDocs'),L=(NEXT_DOCS[S.doc]||[]).filter(x=>!document.getElementById('doc-'+x[0]).closest('label').hidden);el.hidden=!L.length;
+  if(L.length)el.innerHTML='<p>المستند التالي لنفس الصفقة (نفس العميل والمركبة):</p><div>'+L.map(x=>'<button class="btn sm" type="button" data-nd="'+x[0]+'">'+x[1]+' ←</button>').join('')+'</div>'}
 function wzPaint(){
   document.body.classList.toggle('wiz',wzOn);
   const slot=document.getElementById('wzDocSlot');
@@ -5876,7 +5894,7 @@ function wzPaint(){
   const L=wzList();if(wzCur!=='settings'&&!L.some(x=>x.k===wzCur))wzCur=(L.find(x=>WZ.findIndex(y=>y.k===x.k)>WZ.findIndex(y=>y.k===wzCur))||L[L.length-1]).k;
   ed.querySelectorAll('details[data-step]').forEach(d=>{d.classList.toggle('wz-off',d.dataset.step!==wzCur);d.classList.remove('wz-solo')});
   {const vis=wzSecs(wzCur).filter(d=>!d.hidden);if(vis.length===1&&wzCur!=='settings'&&wzCur!=='done'){vis[0].classList.add('wz-solo');vis[0].open=true}}
-  if(wzCur==='done'){const m=wzMissing(),el=document.getElementById('wzCheck');el.className='wz-check'+(m.length?'':' ok');
+  if(wzCur==='done'){wzNextDocs();const m=wzMissing(),el=document.getElementById('wzCheck');el.className='wz-check'+(m.length?'':' ok');
     el.innerHTML=m.length?'<b>قبل الإصدار، ناقص:</b>'+m.map(x=>'<button type="button" data-wz="'+x[0]+'">'+esc(x[1])+'</button>').join(' · '):'المستند جاهز. راجعه في المعاينة، ثم احفظه أو أرسله للعميل.'}
   if(docbarEl.parentNode!==slot)slot.appendChild(docbarEl);slot.hidden=wzCur!=='doc';
   const i=L.findIndex(x=>x.k===wzCur),cur=wzCur==='settings'?WZ_SET:L[i];
@@ -5885,7 +5903,8 @@ function wzPaint(){
   document.getElementById('wzSet').classList.toggle('cur',wzCur==='settings');
   document.getElementById('wzCount').textContent=wzCur==='settings'?'':'الخطوة '+(i+1)+' من '+L.length;
   document.getElementById('wzTitle').textContent=cur.k==='client'&&S.doc==='purchase'?'البائع للمعرض':cur.k==='client'&&S.doc==='payment'?'المستفيد':cur.t;
-  document.getElementById('wzHint').textContent=cur.h;
+  document.getElementById('wzHint').textContent=isLocked()&&wzCur!=='settings'&&wzCur!=='doc'&&wzCur!=='done'?'🔒 هذا المستند صادر ومقفل، فالخانات لا تقبل التعديل. للتعديل اضغط «تعديل بإصدار رقم جديد» في أعلى القسم.':cur.h;
+  document.getElementById('wzHint').classList.toggle('lockhint',isLocked()&&!['settings','doc','done'].includes(wzCur));
   const last=wzCur==='done';document.body.classList.toggle('wz-last',last);
   document.getElementById('wzFinal').classList.toggle('on',last);
   const prev=document.getElementById('wzPrev'),next=document.getElementById('wzNext');
@@ -5893,7 +5912,11 @@ function wzPaint(){
   if(wzCur==='settings'){prev.hidden=true;next.hidden=false;next.textContent='رجوع إلى الخطوات ←'}
   else if(!last)next.textContent='التالي: '+L[i+1].t+' ←';
 }
+document.getElementById('wzNextDocs').addEventListener('click',e=>{const b=e.target.closest('[data-nd]');if(!b)return;const r=document.getElementById('doc-'+b.dataset.nd);
+  r.checked=true;r.dispatchEvent(new Event('change',{bubbles:true}));setTimeout(()=>wzGo(NEXT_STEP[b.dataset.nd]||'client',{focus:true}),60)});
 document.getElementById('wzCheck').addEventListener('click',e=>{const b=e.target.closest('[data-wz]');if(b)wzGo(b.dataset.wz,{focus:true})});
+try{history.replaceState({wz:'doc'},'')}catch(e){}
+addEventListener('popstate',e=>{const k=e.state&&e.state.wz;if(!wzOn||!k)return;if(appEl.dataset.view!=='docs')setView('docs');wzGo(k,{fromPop:true})});
 document.getElementById('wzSteps').addEventListener('click',e=>{const b=e.target.closest('[data-wz]');if(b)wzGo(b.dataset.wz)});
 document.getElementById('wzSet').addEventListener('click',()=>wzGo(wzCur==='settings'?'doc':'settings'));
 document.getElementById('wzNext').addEventListener('click',()=>{if(wzCur==='settings')wzGo('doc');else wzStep(1)});
@@ -5922,7 +5945,10 @@ function newSaleReset(){
   S.cancelled={};S.cancelWhy={};S.locked={};S.pv=Object.assign({},d.pv);S.pu=Object.assign({},d.pu);S.lt=Object.assign({},d.lt);S.ct=Object.assign({},d.ct,{payTerms:''});
   S.trade=Object.assign({},d.trade);S.plan=Object.assign({},d.plan,{start:isoDate(30)});
 }
-document.getElementById('newSale').addEventListener('click',()=>ask('ستُحفظ الصفقة الحالية في السجل، ثم تبدأ صفقة جديدة فارغة بأرقام مستندات جديدة. بيانات البائع تبقى كما هي.',()=>{newSaleReset();if(wzOn)wzGo('doc')}));
+document.getElementById('newSale').addEventListener('click',()=>{const go=()=>{newSaleReset();if(wzOn)wzGo('doc')};
+  const empty=!S.dealId&&!S.client.name&&!S.veh.make&&!S.veh.model&&!S.veh.vin&&!(S.items||[]).some(it=>String(it.d||'').trim()||Number(it.p)>0);
+  if(empty){go();fillEditor();render();save();setStatus('بدأت صفقة جديدة.');return}
+  ask('ستُحفظ الصفقة الحالية في السجل، ثم تبدأ صفقة جديدة فارغة بأرقام مستندات جديدة. بيانات البائع تبقى كما هي.',go)});
 document.getElementById('resetDemo').addEventListener('click',()=>ask('سيتم استبدال كل البيانات بالمثال. رقم السجل والرقم الضريبي والشعار لسيجما تبقى محفوظة.',()=>{
   const keepSellers=S.sellers;S=demo();S.sellers=keepSellers;S.seller='sigma';migrate();
 }));
@@ -5932,7 +5958,8 @@ let isTop=false;try{isTop=window.self===window.top}catch(e){isTop=false}
 if(isTop){
   pb.hidden=false;{let k='';try{k=localStorage.getItem('sigma-hint-pdf')}catch(e){}document.getElementById('pdfHintTop').hidden=k==='1'||matchMedia('(pointer:coarse)').matches}
   const base=document.title;
-  pb.addEventListener('click',()=>{
+  pb.addEventListener('click',e=>{
+    if(!pb.dataset.go){const m=wzMissing();if(m.length){ask('المستند ناقص: '+m.map(x=>x[1]).join('، ')+'. تحفظه PDF كذا؟ (اختر «لا» لإكماله أولاً)',()=>{pb.dataset.go='1';pb.click();delete pb.dataset.go});return}}
     document.title=(S.nums[S.doc]||'document').replace(/[\\/:*?"<>|]/g,'-');
     if(phonePdf()){document.title=base;makePhonePdf();return}
     const go=()=>{window.print();setTimeout(()=>{document.title=base},500)};
@@ -6936,6 +6963,7 @@ if(window.__VIEWER__){
 }
 // clean up exact copies of one deal that an earlier version could log twice on reopening
 try{const seen={};[...STORE.deals].sort((a,b)=>(b.saved||0)-(a.saved||0)).forEach(r=>{const k=JSON.stringify(Object.assign({},r.data,{csig:''}));if(seen[k])delDeal(r.id);else seen[k]=1})}catch(e){}
+if(typeof S.notes==='string'&&S.notes.indexOf('الأسعار تشمل ضريبة القيمة المضافة كما هو موضح.')===0)S.notes=S.notes.replace('الأسعار تشمل ضريبة القيمة المضافة كما هو موضح.','الإجمالي المستحق يشمل ضريبة القيمة المضافة كما هو موضح أعلاه.');
 if(!FROM_SEED){
   if(FIRST_RUN){S.client.name='';S.veh.make='';S.veh.vin=''} // sample data is never stored in the log
   // a reload in the middle of work (the phone closing the app in the background) resumes it; a later opening starts blank
