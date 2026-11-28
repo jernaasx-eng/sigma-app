@@ -4334,6 +4334,8 @@ if(!S||!S.nums||!Array.isArray(S.items))S=null;
 let SEED=null;try{const el=document.getElementById('seed');if(el)SEED=JSON.parse(el.textContent)}catch(e){SEED=null}
 if(SEED&&SEED.nums&&(!S||(SEED.ts||0)>(S.ts||0))){S=SEED;FROM_SEED=true}
 if(!S){S=demo();FIRST_RUN=true}
+// Sigma's real account for this device's builds; the public phone build blanks it and gets it through sync instead
+const SIGMA_BANK='';
 const SELLER_KEEP=['bank','thanks','lhMode','theme','seal'];
 // what belongs to the seller travels with the seller: mirrored into the profile on every save, loaded back on switch
 function sellerStore(){const c=S.company;if(!c)return;SELLER_KEEP.forEach(k=>{c[k]=S[k]});if(c.custom)c.mark=String(c.nameEn||c.nameAr||'•').trim().charAt(0)||'•'}
@@ -6963,6 +6965,8 @@ if(window.__VIEWER__){
 }
 // clean up exact copies of one deal that an earlier version could log twice on reopening
 try{const seen={};[...STORE.deals].sort((a,b)=>(b.saved||0)-(a.saved||0)).forEach(r=>{const k=JSON.stringify(Object.assign({},r.data,{csig:''}));if(seen[k])delDeal(r.id);else seen[k]=1})}catch(e){}
+if(SIGMA_BANK){const ph=b=>b==null||/OM00 0000 0000|ـــــ/.test(String(b));const sg=S.sellers&&S.sellers.sigma;
+  if(sg&&ph(sg.bank))sg.bank=SIGMA_BANK;if(S.seller==='sigma'&&ph(S.bank))S.bank=SIGMA_BANK}
 if(typeof S.notes==='string'&&S.notes.indexOf('الأسعار تشمل ضريبة القيمة المضافة كما هو موضح.')===0)S.notes=S.notes.replace('الأسعار تشمل ضريبة القيمة المضافة كما هو موضح.','الإجمالي المستحق يشمل ضريبة القيمة المضافة كما هو موضح أعلاه.');
 if(!FROM_SEED){
   if(FIRST_RUN){S.client.name='';S.veh.make='';S.veh.vin=''} // sample data is never stored in the log
