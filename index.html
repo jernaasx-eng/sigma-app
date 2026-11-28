@@ -2780,6 +2780,9 @@ body.role-staff .owner-only,body.role-staff #staffBox,body.role-staff #pairBox,b
 .rsheet h1+.rs{margin-bottom:2mm}
 .pdfbar{position:fixed;inset-inline:12px;bottom:12px;z-index:60;background:var(--panel,#fff);color:inherit;border:1px solid var(--line,#ddd);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:12px 14px;display:grid;gap:8px;max-width:520px;margin-inline:auto}
 .pdfbar p{margin:0;font-size:14px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translate(-50%,20px);z-index:90;background:#17171a;color:#fff;padding:10px 16px;border-radius:12px;font-size:.88rem;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:.25s;max-width:calc(100vw - 32px)}
+.toast.on{opacity:1;transform:translate(-50%,0)}.toast.err{background:#8a1c1c}
+@media print{.toast{display:none!important}}
 .pdfmore{display:inline}.pdfmore summary{display:inline;cursor:pointer;text-decoration:underline;font-size:.9em}.pdfmore[open]{display:block;margin-top:4px}
 body.staff .own{display:none!important}
 #smOff:not([hidden]),#smIsOn:not([hidden]){display:grid;gap:8px}
@@ -3725,6 +3728,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
               <label class="f">رابط جسر Google Drive (من Apps Script) <input id="gasUrl" dir="ltr" placeholder="https://script.google.com/macros/s/.../exec"></label>
               <button id="gasSave" class="btn sm primary" type="button">حفظ واختبار الاتصال</button>
             </div>
+            <label class="toggle" id="driveAutoWrap"><input type="checkbox" id="driveAuto"> حفظ نسخة تلقائياً في Drive عند إصدار المستند (حفظ PDF أو الإرسال)، ويفتحها رمز QR</label>
             <div class="ai-row" id="driveBtns" hidden>
               <button id="driveLink" class="btn primary sm" type="button">١. تجهيز رابط Drive</button>
               <span class="hint">٢. احفظ PDF (بالرمز الجديد)</span>
@@ -4585,8 +4589,8 @@ document.getElementById('dlPhAdd').addEventListener('change',async e=>{const el=
 document.getElementById('dlPhGrid').addEventListener('click',e=>{const b=e.target.closest('[data-phdel]');if(!b)return;S.dl.photos.splice(+b.dataset.phdel,1);render();save()});
 document.getElementById('lockOpen').addEventListener('click',()=>ask('فتح القفل والتعديل على نفس الرقم؟ استخدمه فقط إذا لم يُسلَّم المستند للعميل بعد.',()=>{delete S.locked[S.doc]}));
 window.addEventListener('beforeprint',()=>{if(appEl.dataset.view!=='log'&&appEl.dataset.view!=='inv'&&!document.body.classList.contains('rep'))issueDoc('print')});
-document.getElementById('waLink').addEventListener('click',()=>issueDoc('wa'));
-document.getElementById('mailLink').addEventListener('click',()=>issueDoc('mail'));
+document.getElementById('waLink').addEventListener('click',()=>{issueDoc('wa');setTimeout(()=>autoDrive(),400)});
+document.getElementById('mailLink').addEventListener('click',()=>{issueDoc('mail');setTimeout(()=>autoDrive(),400)});
 document.getElementById('driveUp').addEventListener('change',()=>issueDoc('drive'));
 function maxNo(type){
   let best=S.nums[type],bestN=-1;
@@ -6093,8 +6097,8 @@ if(isTop){
     if(!pb.dataset.go){const m=wzMissing();if(m.length){ask('المستند ناقص: '+m.map(x=>x[1]).join('، ')+'. تحفظه PDF كذا؟ (اختر «لا» لإكماله أولاً)',()=>{pb.dataset.go='1';pb.click();delete pb.dataset.go});return}}
     document.title=(S.nums[S.doc]||'document').replace(/[\\/:*?"<>|]/g,'-');
     if(phonePdf()){document.title=base;makePhonePdf();return}
-    const go=()=>{window.print();setTimeout(()=>{document.title=base},500)};
-    Promise.all([document.fonts&&document.fonts.ready?document.fonts.ready:null,qrReady()]).then(go,go);
+    const go=()=>{window.print();setTimeout(()=>{document.title=base},500);setTimeout(()=>autoDrive(),900)};
+    ensureDriveLink().then(()=>Promise.all([document.fonts&&document.fonts.ready?document.fonts.ready:null,qrReady()])).then(go,go);
   });
 }else{document.getElementById('pdfHintFrame').hidden=false}
 
@@ -6118,9 +6122,7 @@ function snapPaginate(root){
   return Math.max(1,Math.ceil((root.getBoundingClientRect().height-2)/PGH));
 }
 let pdfOut=null;
-async function makePhonePdf(){
-  const bar=document.getElementById('pdfBar'),msg=document.getElementById('pdfMsg');
-  bar.hidden=false;msg.textContent='جارٍ تجهيز ملف PDF...';document.getElementById('pdfShare').hidden=true;document.getElementById('pdfOpen').hidden=true;
+async function renderPdf(onPage){
   let host=null;
   try{
     await Promise.all([document.fonts&&document.fonts.ready,qrReady()].filter(Boolean));render();
@@ -6136,7 +6138,7 @@ async function makePhonePdf(){
     const opt=r=>({pixelRatio:r,width:PGW,height:PGH,cacheBust:false,style:{position:'static',left:'0',top:'0',zIndex:'auto',background:lhIm?'transparent':'#ffffff'}});
     try{await htmlToImage.toCanvas(host,opt(.25))}catch(e){}
     for(let i=0;i<n;i++){
-      msg.textContent='جارٍ تجهيز ملف PDF... صفحة '+(i+1)+' من '+n;
+      if(onPage)onPage(i,n);
       clone.style.transform='translateY('+(-i*PGH)+'px)';
       const cv=await htmlToImage.toCanvas(host,opt(2.5));
       const out=document.createElement('canvas');out.width=cv.width;out.height=cv.height;const x=out.getContext('2d');
@@ -6146,14 +6148,22 @@ async function makePhonePdf(){
       if(i)doc.addPage('a4','portrait');doc.addImage(out.toDataURL('image/jpeg',.9),'JPEG',0,0,210,297,undefined,'FAST');
     }
     const name=(S.nums[S.doc]||DOCS[S.doc].ar||'document').replace(/[\\/:*?"<>|]/g,'-')+'.pdf';
-    pdfOut=new File([doc.output('blob')],name,{type:'application/pdf'});
-    issueDoc('print');
+    return {file:new File([doc.output('blob')],name,{type:'application/pdf'}),n,name};
+  }finally{if(host)host.remove()}
+}
+async function makePhonePdf(){
+  const bar=document.getElementById('pdfBar'),msg=document.getElementById('pdfMsg');
+  bar.hidden=false;msg.textContent='جارٍ تجهيز ملف PDF...';document.getElementById('pdfShare').hidden=true;document.getElementById('pdfOpen').hidden=true;
+  try{
+    await ensureDriveLink();
+    const {file,n,name}=await renderPdf((i,n)=>{msg.textContent='جارٍ تجهيز ملف PDF... صفحة '+(i+1)+' من '+n});
+    pdfOut=file;
+    issueDoc('print');autoDrive(pdfOut);
     const canShare=!!(navigator.canShare&&navigator.canShare({files:[pdfOut]}));
     document.getElementById('pdfShare').hidden=false;document.getElementById('pdfShare').textContent=canShare?'مشاركة / حفظ الملف':'تنزيل الملف';
     document.getElementById('pdfOpen').hidden=false;
     msg.textContent='الملف جاهز: '+name+' ('+n+(n>1?' صفحات':' صفحة')+'، '+Math.round(pdfOut.size/1024)+' KB).';
   }catch(e){msg.textContent='تعذّر تجهيز الملف على هذا الجهاز. جرّب مرة أخرى، أو احفظ الملف من الكمبيوتر.';console.error(e)}
-  finally{if(host)host.remove()}
 }
 document.getElementById('pdfShare').addEventListener('click',async()=>{
   if(!pdfOut)return;
@@ -6518,7 +6528,7 @@ function renderLog(){
     (SM.on?'':'<div class="kpi"><small>الربح قبل الضريبة ('+rows.filter(x=>x.c.profit!=null).length+' مركبة معروفة التكلفة)</small><b>'+num(rows.reduce((a,x)=>a+(x.c.profit||0),0))+'</b></div>');
   document.getElementById('logTable').innerHTML=rows.length?'<table><thead><tr><th>الفاتورة</th><th>العميل</th><th>المركبة</th><th>الإجمالي</th><th>المحصّل</th><th>المتبقي</th>'+(SM.on?'':'<th>الربح</th>')+'<th>الاستحقاق</th><th>الحالة</th><th></th></tr></thead><tbody>'+
     rows.map(({r,c})=>{const d=r.data||{},v=d.veh||{},cl=d.client||{};
-      return '<tr><td><bdi>'+esc(r.inv||'—')+'</bdi><span class="sub">'+esc(fmtDate(c.date))+(d.sp&&spName(d.sp)?' · '+esc(spName(d.sp)):'')+(r.by&&r.by.name?' · بواسطة '+esc(r.by.name):'')+'</span></td><td><bdi>'+esc(cl.name||'—')+'</bdi><span class="sub"><bdi>'+esc(cl.phone||'')+'</bdi></span></td>'+
+      return '<tr><td><bdi>'+esc(r.inv||'—')+'</bdi><span class="sub">'+esc(fmtDate(c.date))+(d.sp&&spName(d.sp)?' · '+esc(spName(d.sp)):'')+(r.by&&r.by.name?' · بواسطة '+esc(r.by.name):'')+(Object.values(d.drive||{}).some(x=>x&&x.pdf)?' · <a href="'+esc((Object.values(d.drive).filter(x=>x&&x.pdf).pop()||{}).url||'#')+'" target="_blank" rel="noopener" title="نسخة في Google Drive">☁ Drive</a>':'')+'</span></td><td><bdi>'+esc(cl.name||'—')+'</bdi><span class="sub"><bdi>'+esc(cl.phone||'')+'</bdi></span></td>'+
       '<td><bdi>'+esc([v.make,v.model,v.year].filter(Boolean).join(' ')||'—')+'</bdi><span class="sub"><bdi>'+esc(v.vin||v.plate||'')+'</bdi></span></td>'+
       '<td class="n">'+(c.st==='buy'?'<span class="sub">شراء بـ</span>'+num(c.buy):num(c.grand))+'</td><td class="n">'+num(c.paid)+'</td><td class="n">'+num(Math.max(0,c.bal))+'</td>'+(SM.on?'':'<td class="n">'+(c.profit==null?'—':num(c.profit))+'</td>')+'<td><bdi>'+esc(c.due?fmtDate(c.due):'')+'</bdi></td><td>'+chip(c.st)+'</td>'+
       '<td><div class="act"><button class="btn sm" type="button" data-lopen="'+r.id+'">'+(r.id===S.dealId?'مفتوحة':'فتح')+'</button></div></td></tr>'}).join('')+'</tbody></table>'
@@ -6906,7 +6916,7 @@ const GD='Google Drive';
 function driveStatus(t,err){const el=document.getElementById('driveStatus');el.textContent=t||'';el.className='ai-status'+(err?' err':'')}
 function syncDrive(){
   const dr=driveRec(),w=document.getElementById('driveUrlWrap'),a=document.getElementById('driveUrl');
-  const be=driveBackend();document.getElementById('driveBtns').hidden=!be;
+  const be=driveBackend();document.getElementById('driveAutoWrap').hidden=!be;document.getElementById('driveAuto').checked=driveAutoOn();document.getElementById('driveBtns').hidden=!be||driveAutoOn();
   const gb=document.getElementById('gasBox');gb.hidden=!!mcpCap||!isTop;
   if(!gb.hidden&&document.activeElement!==document.getElementById('gasUrl'))document.getElementById('gasUrl').value=gasUrl();
   if(!be)document.getElementById('driveInfo').textContent=window.claude&&!isTop?'ربط Google Drive يحتاج السماح للصفحة باستخدام موصل Google Drive.':'للربط من هذا الملف: انشر جسر Google Drive (سكربت Apps Script) مرة واحدة، ثم الصق رابطه هنا.';
@@ -6982,7 +6992,7 @@ async function syncNow(manual){
     if(cur){Object.assign(S,JSON.parse(JSON.stringify(cur.data)));migrate()}
     if(ch||cfgCh){if(cur||cfgCh){fillEditor();render()}renderDeals();renderLog();renderInv();renderMargin();
       try{localStorage.setItem(KEY,JSON.stringify(S,(k,v)=>k==='company'?undefined:v))}catch(e){}}
-    setSync('ok');say('تمت المزامنة.');setTimeout(autoBackup,3000);
+    setSync('ok');say('تمت المزامنة.');setTimeout(()=>{try{const d=driveRec();if(d&&!d.pdf&&isLocked())autoDrive()}catch(e){}},1500);setTimeout(autoBackup,3000);
   }catch(e){setSync('slow');say(gdErr(e),true)}
   finally{syncBusy=false;syncPairUi();if(syncAgain){syncAgain=false;clearTimeout(syncT);syncT=setTimeout(()=>syncNow(),2000)}}
 }
@@ -7039,6 +7049,39 @@ async function driveFolder(title){
   if(!f.id)throw {};const sh=await gd('share_file',{fileId:f.id,role:'reader',permissionId:'anyoneWithLink'});
   return {id:f.id,url:sh.shareableLink||f.viewUrl||('https://drive.google.com/drive/folders/'+f.id)};
 }
+/* ---------- automatic copy of every issued document in Google Drive; its QR opens that copy ---------- */
+function driveAutoOn(){return lsGet('sigma-drive-auto')!=='0'&&!!driveBackend()}
+function driveWorthy(){return !BLANKF&&!NOLOCK.includes(S.doc)&&!!S.nums[S.doc]&&!!(S.client.name||S.veh.make||S.veh.vin)}
+function toast(t,err){let el=document.getElementById('toast');if(!el){el=document.createElement('div');el.id='toast';el.className='toast';el.setAttribute('role','status');document.body.appendChild(el)}
+  el.textContent=t;el.classList.toggle('err',!!err);el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),err?6000:3500)}
+// creates the document's own Drive folder (shared by link) so the QR printed on it already points there
+async function ensureDriveLink(){
+  if(!driveAutoOn()||!driveWorthy()||driveRec())return !!driveRec();
+  try{const D=DOCS[S.doc],title=D.ar+' '+S.nums[S.doc]+(S.client.name?' – '+S.client.name:'');
+    const f=await Promise.race([driveFolder(title),new Promise((_,j)=>setTimeout(()=>j({code:'gas_net'}),5000))]);
+    if(!f||!f.id||!f.url)return false;
+    S.drive[docKey()]={id:f.id,url:f.url,pdf:false,at:Date.now()};render();save();syncDrive();await qrReady();return true}
+  catch(e){return false}
+}
+let autoBusy=false;
+async function autoDrive(file){
+  if(autoBusy||!driveAutoOn()||!driveWorthy()||!isLocked())return;
+  const key=docKey();let dr=driveRec();if(dr&&dr.pdf)return;
+  autoBusy=true;
+  try{
+    if(!dr){await ensureDriveLink();dr=driveRec();if(!dr)throw {code:'gas_net'}}
+    if(!file){await Promise.all([document.fonts&&document.fonts.ready,qrReady()].filter(Boolean));file=(await renderPdf()).file}
+    if(file.size>15e6)throw {message:'الملف كبير جداً'};
+    const b64=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(',')[1]);r.onerror=no;r.readAsDataURL(file)});
+    const id=await driveUpload(dr.id,file.name,b64);
+    const rec=(S.drive||{})[key];if(rec){rec.pdf=true;rec.pdfId=id||'';rec.pending=false}
+    storeDeal(false);save();syncDrive();toast('✓ حُفظت نسخة '+DOCS[S.doc].ar+' '+S.nums[S.doc]+' في Google Drive');
+  }catch(e){const rec=(S.drive||{})[key];if(rec){rec.pending=true;save()}
+    toast('لم تُحفظ نسخة Drive الآن ('+(e&&e.code==='gas_net'?'لا يوجد اتصال':'خطأ')+'). ستُعاد المحاولة تلقائياً.',true)}
+  finally{autoBusy=false}
+}
+addEventListener('online',()=>setTimeout(()=>autoDrive(),2000));
+document.getElementById('driveAuto').addEventListener('change',e=>{lsSet('sigma-drive-auto',e.target.checked?'1':'0');syncDrive()});
 async function driveUpload(folderId,name,b64){
   if(driveBackend()==='gas'){const j=await gas({action:'upload',folderId,name,data:b64});return j.id}
   const up=await gd('create_file',{title:name,parentId:folderId,contentMimeType:'application/pdf',base64Content:b64,disableConversionToGoogleType:true});return up.id||'';
