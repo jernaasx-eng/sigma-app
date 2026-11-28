@@ -2688,8 +2688,28 @@ input:disabled{opacity:.65}
 .viewbar button{font:inherit;font-size:.92rem;font-weight:600;padding:9px 16px;border:0;background:none;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;display:flex;gap:6px;align-items:center}
 .viewbar button[aria-selected=true]{color:var(--fg);border-bottom-color:var(--ui-accent)}
 .viewbar .count{font-size:.72rem;background:var(--danger);color:#fff;border-radius:99px;padding:1px 7px;font-weight:600}
-.app[data-view=log] .docs-only,.app[data-view=inv] .docs-only{display:none!important}
-.app:not([data-view=log]) #logView,.app:not([data-view=inv]) #invView{display:none}
+.app[data-view=log] .docs-only,.app[data-view=inv] .docs-only,.app[data-view=users] .docs-only{display:none!important}
+.app:not([data-view=log]) #logView,.app:not([data-view=inv]) #invView,.app:not([data-view=users]) #usersView{display:none}
+.whochip{display:inline-flex;align-items:center;gap:8px;font-size:.82rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--panel)}
+.whochip #whoName{color:var(--fg);font-weight:600}
+body.role-staff .owner-only,body.role-staff #staffBox,body.role-staff #pairBox,body.no-edit .need-edit,body.no-inv .need-inv,body.no-set .need-set{display:none!important}
+.us-list{display:grid;gap:10px;margin:14px 0}
+.us-card{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel);display:grid;gap:10px}
+.us-card.off{opacity:.6}
+.us-head{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;align-items:end}
+.us-perms{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.84rem}
+.us-perms b{width:100%;font-size:.78rem;color:var(--muted);font-weight:600}
+.us-perms label{display:inline-flex!important;flex-direction:row!important;gap:6px;align-items:center;white-space:nowrap;font-size:.84rem;color:var(--fg)}
+.us-perms.ex label{white-space:normal;max-width:260px}
+#actTable td,#actTable th{padding:7px 10px;text-align:start;border-bottom:1px solid var(--line);font-size:.84rem}
+.us-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;font-size:.78rem;color:var(--muted)}
+.us-join{display:grid;gap:8px}
+.login-screen{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
+.login-screen[hidden]{display:none}
+.login-box{width:min(380px,100%);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px 22px;display:grid;gap:14px;box-shadow:0 20px 50px rgba(0,0,0,.12)}
+.login-box .mk{width:52px;height:52px;border-radius:14px;background:var(--ui-accent);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:700;margin:0 auto}
+.login-box h2{margin:0;text-align:center;font-size:1.2rem}.login-box p{margin:0;text-align:center;color:var(--muted);font-size:.85rem}
+.login-box .btn{padding:12px;font-size:1rem}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:14px;min-width:0}
 .panel h2{margin:0;font-size:1.15rem}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
@@ -2968,6 +2988,15 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
   <p id="pdfMsg"></p>
   <div class="ai-row"><button id="pdfShare" class="btn primary" type="button" hidden>مشاركة / حفظ الملف</button><button id="pdfOpen" class="btn" type="button" hidden>فتح</button><button id="pdfClose" class="btn" type="button">إغلاق</button></div>
 </div>
+<div id="loginScreen" class="login-screen" hidden role="dialog" aria-label="تسجيل الدخول">
+  <form class="login-box" id="loginForm" autocomplete="on">
+    <div class="mk">Σ</div><h2>منشئ الفواتير</h2><p>ادخل باسم المستخدم والرمز اللي أعطاك إياه المدير.</p>
+    <label class="f">اسم المستخدم <input id="lgUser" dir="ltr" autocomplete="username" autocapitalize="none" required></label>
+    <label class="f">الرمز <input id="lgPin" type="password" inputmode="numeric" autocomplete="current-password" required></label>
+    <button class="btn primary" type="submit" id="lgGo">دخول</button>
+    <p class="ai-status" id="lgSt" role="status"></p>
+  </form>
+</div>
 <div id="sigPad" class="sigpad" hidden role="dialog" aria-label="توقيع العميل">
   <div class="box"><h3>توقيع العميل</h3><p id="sigPadWho"></p><canvas id="sigCanvas"></canvas>
   <div class="ai-row"><button id="sigOk" class="btn primary" type="button">اعتماد التوقيع</button><button id="sigClear" class="btn" type="button">مسح</button><button id="sigCancel" class="btn" type="button">إلغاء</button></div></div>
@@ -2980,6 +3009,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
       <p>عروض أسعار وفواتير وسندات وعقود بيع المركبات، مع سجل المبيعات والمخزون</p>
     </div>
     <div class="actions">
+      <span id="whoChip" class="whochip" hidden><span id="whoName"></span><button id="logoutBtn" class="linkbtn" type="button">خروج</button></span>
       <button id="newSale" class="btn" type="button">بيع جديد</button>
       <button id="printBtn" class="btn primary" type="button" hidden>حفظ PDF</button>
       <button id="dlCopy" class="btn primary" type="button" hidden>تنزيل نسخة للطباعة</button>
@@ -2990,6 +3020,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
     <button type="button" role="tab" id="tab-docs" data-view="docs" aria-selected="true">المستندات</button>
     <button type="button" role="tab" id="tab-log" data-view="log" aria-selected="false">سجل المبيعات <span class="count" id="lateCount" hidden></span></button>
     <button type="button" role="tab" id="tab-inv" data-view="inv" aria-selected="false">المخزون <span class="count" id="expCount" hidden></span></button>
+    <button type="button" role="tab" id="tab-users" data-view="users" aria-selected="false" hidden>المستخدمون والصلاحيات</button>
   </nav>
 
   <div id="overdueBar" class="banner warn docs-only" hidden>
@@ -3024,6 +3055,21 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
     <p class="hint">«المحصّل» = الدفعات المسجّلة في سندات القبض + مبلغ سند القبض المفتوح حالياً للصفقة. تُحفظ كل صفقة في السجل تلقائياً عند كتابة اسم العميل أو بيانات المركبة.</p>
   </section>
 
+  <section id="usersView" class="panel" aria-label="المستخدمون والصلاحيات">
+    <div class="alertline"><h2>المستخدمون والصلاحيات</h2><span class="ai-status" id="usStatus" role="status"></span></div>
+    <p class="hint">كل موظف يدخل باسم مستخدم ورمز خاص به. الصلاحيات يتحقق منها جسر Google Drive نفسه: ما لا يُسمح للموظف برؤيته (مثل تكلفة المركبات) لا يصل إلى جهازه أصلاً، وما لا يُسمح له بتعديله يُرفض.</p>
+    <div class="drivebox us-join">
+      <b>رابط دخول الموظفين</b>
+      <p class="hint">أرسل هذا الرابط للموظف مرة واحدة. يفتحه على جواله أو جهازه ثم يدخل باسمه ورمزه. الرابط وحده لا يعطي أي بيانات بدون اسم ورمز صحيحين.</p>
+      <div class="ai-row"><input id="usJoin" dir="ltr" readonly style="flex:1"><button id="usJoinCopy" class="btn sm" type="button">نسخ</button><a id="usJoinWa" class="btn sm" target="_blank" rel="noopener">إرسال واتساب</a></div>
+    </div>
+    <div id="usList" class="us-list"></div>
+    <div class="ai-row"><button id="usAdd" class="btn" type="button">+ موظف جديد</button><button id="usSave" class="btn primary" type="button">حفظ التغييرات</button><button id="usReload" class="btn sm" type="button">تحديث</button></div>
+    <div class="alertline" style="margin-top:22px"><h2>سجل النشاط</h2>
+      <label class="f" style="flex-direction:row;align-items:center;gap:6px">الموظف <select id="actWho"><option value="">الكل</option></select></label></div>
+    <div class="table-wrap"><table class="log" id="actTable"><thead><tr><th>الوقت</th><th>الموظف</th><th>العملية</th><th>التفاصيل</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
   <section id="invView" class="panel" aria-label="المخزون">
     <div class="alertline"><h2>مخزون المركبات</h2><span class="sync" id="syncState2"></span></div>
     <div class="toolbar">
@@ -3034,13 +3080,13 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         <select id="invKind"><option value="">الكل</option><option value="new">سيارات جديدة</option><option value="used">سيارات مستعملة</option><option value="truck">شاحنات</option><option value="trailer">مقطورات</option></select>
       </label>
       <label class="f grow">بحث <input id="invSearch" placeholder="الماركة، الطراز، رقم الهيكل، اللوحة"></label>
-      <button id="invAdd" class="btn primary" type="button">+ إضافة مركبة</button>
+      <button id="invAdd" class="btn primary need-inv" type="button">+ إضافة مركبة</button>
       <button id="invFromDeal" class="btn" type="button">إضافة مركبة الصفقة الحالية</button>
       <label class="toggle"><input type="checkbox" id="invOld"> الأقدم في المعرض أولاً</label>
-      <button id="invScan" class="btn primary" type="button">إضافة من صورة أو PDF</button>
+      <button id="invScan" class="btn primary need-inv" type="button">إضافة من صورة أو PDF</button>
       <input id="invScanFile" type="file" accept="image/*,application/pdf,.pdf" multiple hidden>
     </div>
-    <div class="toolbar own" id="catBar">
+    <div class="toolbar own need-inv" id="catBar">
       <button id="catPub" class="btn" type="button">نشر / تحديث الكتالوج العام</button>
       <label class="toggle"><input type="checkbox" id="catPrice"> إظهار الأسعار في الكتالوج</label>
       <a id="catOpen" class="btn sm" target="_blank" rel="noopener" hidden>فتح الكتالوج</a>
@@ -3087,8 +3133,8 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
         <b>🔒 هذا المستند صادر ومقفل</b>
         <p id="lockText"></p>
         <div class="ai-row">
-          <button id="lockReissue" class="btn sm primary" type="button">تعديل بإصدار رقم جديد</button>
-          <button id="lockOpen" class="btn sm" type="button">فتح القفل</button>
+          <button id="lockReissue" class="btn sm primary need-edit" type="button">تعديل بإصدار رقم جديد</button>
+          <button id="lockOpen" class="btn sm need-edit" type="button">فتح القفل</button>
         </div>
       </div>
       <div class="wz" id="wz">
@@ -3153,7 +3199,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
           <p class="ai-warn" id="backupNag" hidden></p>
           <div class="ai-row">
             <button id="dealSave" class="btn sm" type="button">حفظ الصفقة الحالية</button>
-            <button id="backupBtn" class="btn sm own" type="button">تنزيل نسخة احتياطية</button>
+            <button id="backupBtn" class="btn sm own owner-only" type="button">تنزيل نسخة احتياطية</button>
             <label class="btn sm own" style="position:relative">استعادة من نسخة<input id="restoreFile" type="file" accept="application/json,.json" style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
           </div>
           <div class="drivebox" id="pairBox" hidden>
@@ -3261,7 +3307,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
             <label class="f" data-docs="delivery">وقت الاستلام <input id="docTime" type="time" data-bind="time"></label>
           </div>
           <button id="quoteToInv" class="btn sm primary" type="button" data-docs="quote">تحويل العرض إلى فاتورة</button>
-          <label class="toggle"><input type="checkbox" id="cancelOn"> إلغاء هذا المستند (يظهر عليه ختم «ملغى»)</label>
+          <label class="toggle need-edit"><input type="checkbox" id="cancelOn"> إلغاء هذا المستند (يظهر عليه ختم «ملغى»)</label>
           <label class="f" id="cancelWhyWrap">سبب الإلغاء <input id="cancelWhy" dir="auto"></label>
           <div data-docs="receipt delivery contract payment" class="fields" style="padding:0">
             <label class="toggle"><input type="checkbox" id="autoLink"> ربط تلقائي بالفاتورة (رقمها، إجماليها، والدفعات السابقة)</label>
@@ -3276,7 +3322,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
           <div class="f">البائع في هذه الصفقة
             <div class="seg" role="radiogroup" id="sellerSeg" style="flex-wrap:wrap"></div>
           </div>
-          <div class="ai-row">
+          <div class="need-set" style="display:contents"><div class="ai-row">
             <button id="sellerAdd" class="btn sm" type="button">+ بائع إضافي</button>
             <button id="sellerDel" class="btn sm" type="button" hidden>حذف هذا البائع</button>
           </div>
@@ -3335,7 +3381,7 @@ table.ctab.grid3 thead th{background:var(--solid);color:var(--on-acc);text-align
             <p class="hint lhState"></p>
           </div>
           <p class="hint">صوّر الختم والتوقيع على ورق أبيض بإضاءة جيدة، أو استخدم PNG بخلفية شفافة. الخلفية البيضاء تُزال تلقائياً عند الرفع. يظهران في خانة توقيع البائع: الفاتورة، والمحاسب والختم في سند القبض، والمُسلِّم في سند الاستلام.</p>
-          <button id="sigmaReset" class="btn sm" type="button">استعادة بيانات سيجما الأصلية</button>
+          <button id="sigmaReset" class="btn sm" type="button">استعادة بيانات سيجما الأصلية</button></div>
         </div>
       </details>
 
@@ -4466,7 +4512,7 @@ function uniqueNums(){
 }
 /* issued documents are locked: printing or sending a document freezes it; changes go to a new number and the issued one is kept as cancelled */
 const NOLOCK=['statement'];
-function isLocked(){return !NOLOCK.includes(S.doc)&&!!S.locked&&!!S.nums[S.doc]&&S.locked[S.doc]===S.nums[S.doc]}
+function isLocked(){if(typeof notMine==='function'&&notMine())return true;return !NOLOCK.includes(S.doc)&&!!S.locked&&!!S.nums[S.doc]&&S.locked[S.doc]===S.nums[S.doc]}
 function issueDoc(how){
   if(BLANKF)return;
   if(NOLOCK.includes(S.doc)||!S.nums[S.doc]||isLocked())return;
@@ -4478,6 +4524,7 @@ function applyLock(){
   const on=isLocked(),bar=document.getElementById('lockBar');if(!bar)return;bar.hidden=!on;
   ed.querySelectorAll('details').forEach(d=>d.querySelectorAll('.fields').forEach(f=>{f.inert=on&&!d.dataset.keep&&!f.hasAttribute('data-free')}));
   ed.classList.toggle('locked',on);
+  if(on&&notMine()){const r=STORE.deals.find(x=>x.id===S.dealId);document.getElementById('lockText').textContent='هذه الصفقة أنشأها '+((r&&r.by&&r.by.name)||'موظف آخر')+'، ولا تملك صلاحية تعديلها. يمكنك عرضها وطباعتها.';return}
   if(on){const a=(S.lockedAt||{})[S.doc],H={print:'طُبع أو حُفظ PDF',wa:'أُرسل عبر واتساب',mail:'أُرسل بالبريد',drive:'رُفع على Google Drive'};
     document.getElementById('lockText').textContent=DOCS[S.doc].ar+' رقم '+S.nums[S.doc]+(a?' — '+(H[a.how]||'صدر')+' بتاريخ '+new Date(a.t).toLocaleDateString('en-GB'):'')+'. لتعديله اختر «تعديل بإصدار رقم جديد»: يُحفظ هذا المستند في السجل كملغى، ويأخذ المعدّل الرقم التالي.'}
 }
@@ -5436,7 +5483,7 @@ function renderDeals(){
   const list=loadDeals(),el=document.getElementById('dealList');
   el.innerHTML=list.length?list.map(d=>'<div class="deal'+(d.id===S.dealId?' cur':'')+'"><span><b>'+esc(d.name)+'</b><small>'+esc(d.inv||'')+' · '+esc(new Date(d.saved).toLocaleDateString('en-GB'))+'</small></span>'
     +(d.id===S.dealId?'<small>الحالية</small>':'<button class="btn sm" type="button" data-dopen="'+d.id+'">فتح</button>')
-    +'<button class="del" type="button" data-ddel="'+d.id+'" aria-label="حذف الصفقة">×</button></div>').join('')
+    +'<button class="del need-edit" type="button" data-ddel="'+d.id+'" aria-label="حذف الصفقة">×</button></div>').join('')
     :'<p class="hint">لا توجد صفقات محفوظة بعد.</p>';
 }
 function applyKindDefaults(){
@@ -5934,6 +5981,87 @@ ed.addEventListener('keydown',e=>{if(!wzOn||e.key!=='Enter'||e.shiftKey||e.isCom
   const F=wzFields(),i=F.indexOf(t);if(i<0)return;e.preventDefault();t.dispatchEvent(new Event('change',{bubbles:true}));
   const n=F.slice(i+1).find(x=>!x.matches('[type=checkbox],[type=radio]'));if(n)n.focus();else wzStep(1)});
 document.getElementById('pdfHintX').addEventListener('click',()=>{document.getElementById('pdfHintTop').hidden=true;try{localStorage.setItem('sigma-hint-pdf','1')}catch(e){}});
+const KEEP_ON_LOGOUT=['sigma-gas-url','sigma-join','sigma-wizard','sigma-hint-pdf'];
+function wipeLocal(){try{Object.keys(localStorage).forEach(k=>{if(/^sigma/.test(k)&&!KEEP_ON_LOGOUT.includes(k))localStorage.removeItem(k)})}catch(e){}
+  try{indexedDB.deleteDatabase('sigma-photos')}catch(e){}}
+function staffSignedOut(msg){wipeLocal();try{sessionStorage.setItem('sigma-lg-msg',msg||'')}catch(e){}location.reload()}
+function applyRole(){
+  const st=isStaff(),P=myPerms(),me=(AUTH&&AUTH.me)||{};
+  document.body.classList.toggle('role-staff',st);
+  document.body.classList.toggle('no-edit',st&&!P.edit);document.body.classList.toggle('no-inv',st&&!P.inv);document.body.classList.toggle('no-set',st&&!P.settings);
+  const chip=document.getElementById('whoChip');chip.hidden=!st;if(st)document.getElementById('whoName').textContent='👤 '+(me.name||'');
+  document.getElementById('tab-users').hidden=st||!gasToken()||!gasUrl()||!isTop;
+  if(st){SM.on=!P.costs;SM.who=me.sp||'';SM.h='';document.body.classList.toggle('staff',SM.on);
+    const ok=Array.isArray(P.docs)&&P.docs.length?P.docs:['quote'];
+    document.querySelectorAll('.docbar input[name=doc]').forEach(r=>{const lb=r.closest('label');lb.hidden=!ok.includes(r.value)});
+    if(!ok.includes(S.doc)){const r=document.getElementById('doc-'+ok[0]);if(r){r.checked=true;S.doc=ok[0]}}}
+}
+/* a staff member may open anyone's deal, but only edits his own unless he has the edit permission */
+function notMine(){if(typeof AUTH==='undefined'||!isStaff()||myPerms().edit)return false;const r=STORE.deals.find(x=>x.id===S.dealId);return !!(r&&r.by&&r.by.uid!==(AUTH.me||{}).uid)}
+setTimeout(function(){ // after the bridge settings further down are defined
+  const scr=document.getElementById('loginScreen');
+  if(needLogin()){scr.hidden=false;let m='';try{m=sessionStorage.getItem('sigma-lg-msg')||'';sessionStorage.removeItem('sigma-lg-msg')}catch(e){}document.getElementById('lgSt').textContent=m;setTimeout(()=>document.getElementById('lgUser').focus(),100)}
+  document.getElementById('loginForm').addEventListener('submit',async e=>{e.preventDefault();const st=document.getElementById('lgSt'),go=document.getElementById('lgGo');
+    st.className='ai-status';st.textContent='جارٍ الدخول...';go.disabled=true;
+    try{const r=await fetch(gasUrl(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'login',login:document.getElementById('lgUser').value.trim(),pin:document.getElementById('lgPin').value,device:navigator.userAgent.match(/\(([^;)]+)/)?.[1]||''})});
+      const j=await r.json();
+      if(j.ok){wipeLocal();localStorage.setItem('sigma-auth',JSON.stringify({session:j.session,me:j.me}));st.textContent='أهلاً '+j.me.name+'، جارٍ تحميل البيانات...';setTimeout(()=>location.reload(),400);return}
+      st.className='ai-status err';st.textContent=j.error==='locked'?'محاولات كثيرة خاطئة. حاول بعد '+(j.wait||15)+' دقيقة.':j.error==='disabled'?'هذا الحساب موقوف. راجع المدير.':'اسم المستخدم أو الرمز غير صحيح.'}
+    catch(err){st.className='ai-status err';st.textContent='تعذّر الاتصال. تأكد من الإنترنت وحاول مرة أخرى.'}
+    go.disabled=false});
+  document.getElementById('logoutBtn').addEventListener('click',()=>ask('تسجيل الخروج من هذا الجهاز؟ تُمسح بيانات الشركة من الجهاز، وتبقى محفوظة في Drive. التعديلات التي لم تُزامن بعد ستضيع.',async()=>{
+    try{await syncNow()}catch(e){}try{await gas({action:'logout',session:AUTH.session})}catch(e){}staffSignedOut('تم تسجيل الخروج.')}));
+},0);
+/* ---------- owner: users, permissions and activity ---------- */
+const PERM_L={costs:'رؤية التكاليف والأرباح والعمولات',edit:'تعديل صفقات الآخرين والحذف والإلغاء وإعادة الإصدار',inv:'إضافة وتعديل المخزون ونشر الكتالوج',settings:'تعديل بيانات البائع والإعدادات'};
+const DEF_PERMS={docs:['quote','invoice','receipt','delivery','contract','statement'],costs:false,edit:false,inv:false,settings:false};
+let USERS=[],usDirty=false;
+function joinLink(){return (APP_URL||'').replace(/\/?$/,'/')+'#join='+btoa(unescape(encodeURIComponent(gasUrl()))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function usSay(t,err){const el=document.getElementById('usStatus');el.textContent=t||'';el.className='ai-status'+(err?' err':'')}
+function usRender(){
+  const box=document.getElementById('usList');
+  box.innerHTML=USERS.length?USERS.map((u,i)=>{const P=u.perms||DEF_PERMS;
+    return '<div class="us-card'+(u.active===false?' off':'')+'" data-u="'+i+'"><div class="us-head">'+
+      '<label class="f">الاسم <input data-uf="name" value="'+esc(u.name||'')+'" dir="auto"></label>'+
+      '<label class="f">اسم المستخدم للدخول <input data-uf="login" value="'+esc(u.login||'')+'" dir="ltr" autocapitalize="none"></label>'+
+      '<label class="f">'+(u.hasPin?'رمز جديد (اتركه فارغاً للإبقاء)':'الرمز (4 أرقام أو أكثر)')+' <input data-uf="pin" type="password" inputmode="numeric" autocomplete="new-password" value="'+esc(u.pin||'')+'"></label>'+
+      '<label class="f">مندوب المبيعات المرتبط <select data-uf="sp"><option value="">—</option>'+(S.staff||[]).map(x=>'<option value="'+esc(x.id)+'"'+(x.id===u.sp?' selected':'')+'>'+esc(x.name||'')+'</option>').join('')+'</select></label></div>'+
+      '<div class="us-perms"><b>المستندات المسموح بإصدارها</b>'+Object.keys(DOCS).filter(d=>d!=='transfer').map(d=>'<label><input type="checkbox" data-ud="'+d+'"'+((P.docs||[]).includes(d)?' checked':'')+'>'+esc(DOCS[d].ar)+'</label>').join('')+'</div>'+
+      '<div class="us-perms ex"><b>صلاحيات إضافية</b>'+Object.keys(PERM_L).map(k=>'<label><input type="checkbox" data-up="'+k+'"'+(P[k]?' checked':'')+'>'+PERM_L[k]+'</label>').join('')+'</div>'+
+      '<div class="us-foot"><span>'+(u.last?'آخر نشاط: '+new Date(u.last).toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}):u.id?'لم يدخل بعد':'جديد — احفظ لإنشائه')+'</span><span class="ai-row">'+
+      '<label class="toggle"><input type="checkbox" data-uf="active"'+(u.active===false?'':' checked')+'> الحساب فعّال</label><button class="btn sm" type="button" data-udel="'+i+'">حذف</button></span></div></div>'}).join(''):'<p class="hint">لا يوجد موظفون بعد. اضغط «+ موظف جديد».</p>';
+  const w=document.getElementById('actWho'),cur=w.value;w.innerHTML='<option value="">الكل</option><option value="owner">المالك</option>'+USERS.filter(u=>u.id).map(u=>'<option value="'+esc(u.id)+'">'+esc(u.name)+'</option>').join('');w.value=cur;
+}
+let ACT=[];
+const ACT_L={new:'إنشاء',edit:'تعديل',del:'حذف',login:'تسجيل دخول',fail:'دخول فاشل'},ACT_C={deals:'صفقة',inv:'مركبة',cfg:'إعدادات',auth:''};
+function actRender(){const w=document.getElementById('actWho').value,tb=document.querySelector('#actTable tbody');
+  const L=ACT.filter(a=>!w||a.uid===w).slice(0,300);
+  tb.innerHTML=L.length?L.map(a=>'<tr'+(a.act==='fail'||a.act==='del'?' class="late"':'')+'><td><bdi>'+new Date(a.t).toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'})+'</bdi></td><td>'+esc(a.name||'—')+'</td><td>'+esc((ACT_L[a.act]||a.act)+(ACT_C[a.c]?' '+ACT_C[a.c]:''))+'</td><td>'+esc(a.label||'')+'</td></tr>').join(''):'<tr><td colspan="4" class="hint">لا يوجد نشاط مسجّل بعد.</td></tr>'}
+async function usLoad(){
+  document.getElementById('usJoin').value=joinLink();document.getElementById('usJoinWa').href='https://wa.me/?text='+encodeURIComponent('رابط دخول منشئ الفواتير — سيجما للسيارات:\n'+joinLink()+'\nادخل باسم المستخدم والرمز اللي أعطيتك إياه.');
+  usSay('جارٍ التحميل...');
+  try{const [a,b]=await Promise.all([gas({action:'users_get'}),gas({action:'activity_get',limit:600})]);USERS=a.users||[];ACT=b.list||[];usDirty=false;usRender();actRender();usSay('')}
+  catch(e){usSay(/action|forbidden/.test(String(e&&e.message))?'جسر Drive يحتاج تحديثاً للإصدار 6 لدعم المستخدمين.':'تعذّر التحميل: '+(e&&e.message||'تحقق من الاتصال'),true)}
+}
+document.getElementById('usList').addEventListener('input',e=>{const c=e.target.closest('[data-u]');if(!c)return;const u=USERS[+c.dataset.u];u.perms=u.perms||JSON.parse(JSON.stringify(DEF_PERMS));usDirty=true;const t=e.target;
+  if(t.dataset.uf)u[t.dataset.uf]=t.type==='checkbox'?t.checked:t.value;
+  else if(t.dataset.ud){const d=t.dataset.ud,L=new Set(u.perms.docs||[]);t.checked?L.add(d):L.delete(d);u.perms.docs=[...L]}
+  else if(t.dataset.up)u.perms[t.dataset.up]=t.checked;
+  if(t.dataset.uf==='active')c.classList.toggle('off',!t.checked);usSay('تغييرات غير محفوظة')});
+document.getElementById('usList').addEventListener('click',e=>{const b=e.target.closest('[data-udel]');if(!b)return;const u=USERS[+b.dataset.udel];
+  ask('حذف «'+(u.name||'')+'»؟ لن يستطيع الدخول، ويبقى اسمه على المستندات التي أصدرها.',()=>{USERS.splice(+b.dataset.udel,1);usDirty=true;usRender();usSay('تغييرات غير محفوظة')})});
+document.getElementById('usAdd').addEventListener('click',()=>{USERS.push({name:'',login:'',pin:'',active:true,perms:JSON.parse(JSON.stringify(DEF_PERMS))});usDirty=true;usRender();const c=document.querySelector('#usList .us-card:last-child input');if(c)c.focus()});
+document.getElementById('usSave').addEventListener('click',async()=>{
+  for(const u of USERS){if(!String(u.name||'').trim()||!String(u.login||'').trim()){usSay('اكتب الاسم واسم المستخدم لكل موظف.',true);return}
+    if((!u.hasPin||u.pin)&&!/^\d{4,}$/.test(String(u.pin||''))){usSay('رمز «'+u.name+'» يجب أن يكون 4 أرقام أو أكثر.',true);return}}
+  usSay('جارٍ الحفظ...');
+  try{const j=await gas({action:'users_put',users:USERS.map(u=>({id:u.id,name:u.name.trim(),login:u.login.trim(),pin:u.pin||'',sp:u.sp||'',active:u.active!==false,perms:u.perms||DEF_PERMS}))});
+    USERS=j.users||[];usDirty=false;usRender();usSay('تم الحفظ. التغييرات تصل أجهزة الموظفين مع المزامنة التالية.')}
+  catch(e){usSay(e&&e.message==='dup'?'اسم المستخدم مكرر لموظفين.':'تعذّر الحفظ: '+(e&&e.message||''),true)}});
+document.getElementById('usReload').addEventListener('click',usLoad);
+document.getElementById('actWho').addEventListener('change',actRender);
+document.getElementById('usJoinCopy').addEventListener('click',()=>{const i=document.getElementById('usJoin');i.select();try{navigator.clipboard.writeText(i.value)}catch(e){document.execCommand('copy')}usSay('نُسخ الرابط.')});
+document.getElementById('tab-users').addEventListener('click',()=>setTimeout(usLoad,50));
 function newSaleReset(){
   const d=demo();
   if(S.client.name||S.veh.make||S.veh.vin)storeDeal(false);
@@ -6390,7 +6518,7 @@ function renderLog(){
     (SM.on?'':'<div class="kpi"><small>الربح قبل الضريبة ('+rows.filter(x=>x.c.profit!=null).length+' مركبة معروفة التكلفة)</small><b>'+num(rows.reduce((a,x)=>a+(x.c.profit||0),0))+'</b></div>');
   document.getElementById('logTable').innerHTML=rows.length?'<table><thead><tr><th>الفاتورة</th><th>العميل</th><th>المركبة</th><th>الإجمالي</th><th>المحصّل</th><th>المتبقي</th>'+(SM.on?'':'<th>الربح</th>')+'<th>الاستحقاق</th><th>الحالة</th><th></th></tr></thead><tbody>'+
     rows.map(({r,c})=>{const d=r.data||{},v=d.veh||{},cl=d.client||{};
-      return '<tr><td><bdi>'+esc(r.inv||'—')+'</bdi><span class="sub">'+esc(fmtDate(c.date))+(d.sp&&spName(d.sp)?' · '+esc(spName(d.sp)):'')+'</span></td><td><bdi>'+esc(cl.name||'—')+'</bdi><span class="sub"><bdi>'+esc(cl.phone||'')+'</bdi></span></td>'+
+      return '<tr><td><bdi>'+esc(r.inv||'—')+'</bdi><span class="sub">'+esc(fmtDate(c.date))+(d.sp&&spName(d.sp)?' · '+esc(spName(d.sp)):'')+(r.by&&r.by.name?' · بواسطة '+esc(r.by.name):'')+'</span></td><td><bdi>'+esc(cl.name||'—')+'</bdi><span class="sub"><bdi>'+esc(cl.phone||'')+'</bdi></span></td>'+
       '<td><bdi>'+esc([v.make,v.model,v.year].filter(Boolean).join(' ')||'—')+'</bdi><span class="sub"><bdi>'+esc(v.vin||v.plate||'')+'</bdi></span></td>'+
       '<td class="n">'+(c.st==='buy'?'<span class="sub">شراء بـ</span>'+num(c.buy):num(c.grand))+'</td><td class="n">'+num(c.paid)+'</td><td class="n">'+num(Math.max(0,c.bal))+'</td>'+(SM.on?'':'<td class="n">'+(c.profit==null?'—':num(c.profit))+'</td>')+'<td><bdi>'+esc(c.due?fmtDate(c.due):'')+'</bdi></td><td>'+chip(c.st)+'</td>'+
       '<td><div class="act"><button class="btn sm" type="button" data-lopen="'+r.id+'">'+(r.id===S.dealId?'مفتوحة':'فتح')+'</button></div></td></tr>'}).join('')+'</tbody></table>'
@@ -6590,7 +6718,7 @@ function renderInv(){
     rows.map(x=>{const m=(Number(x.price)||0)-invCost(x),ag=invAge(x),pc=(x.photos||[]).length;return '<tr><td><bdi>'+esc(invTitle(x))+'</bdi><span class="sub"><bdi>'+esc(x.color||'')+'</bdi>'+(pc?' · 📷 '+pc:'')+'</span>'+expAlerts().filter(a=>a.x===x).map(a=>'<span class="sub" style="color:#c0392b">⚠ '+esc(expTxt(a))+'</span>').join('')+'</td><td>'+esc((KIND[x.kind]||KIND.new).ar)+'</td>'+
       '<td><bdi>'+esc(x.vin||'—')+'</bdi><span class="sub"><bdi>'+esc(x.plate||'')+'</bdi></span></td>'+(SM.on?'':'<td class="n">'+num(invCost(x))+(invExp(x)?'<span class="sub">منها مصاريف '+num(invExp(x))+'</span>':'')+'</td>')+'<td class="n">'+num(x.price)+'</td>'+(SM.on?'':'<td class="n">'+num(m)+'</td>')+
       '<td>'+(x.status==='sold'||ag==null?'—':'<span class="age'+(ag>=120?' a3':ag>=60?' a2':'')+'">'+ag+' يوم</span>')+'</td><td>'+chip0(x.status)+'</td><td><div class="act">'+(x.status!=='sold'?'<button class="btn sm primary" type="button" data-iuse="'+x.id+'">بيع في صفقة</button>':'')+
-      '<button class="btn sm" type="button" data-iedit="'+x.id+'">تعديل</button><button class="del" type="button" data-idel="'+x.id+'" aria-label="حذف">×</button></div></td></tr>'}).join('')+'</tbody></table>'
+      '<button class="btn sm need-inv" type="button" data-iedit="'+x.id+'">تعديل</button><button class="del need-inv need-edit" type="button" data-idel="'+x.id+'" aria-label="حذف">×</button></div></td></tr>'}).join('')+'</tbody></table>'
     :'<p class="empty">'+(STORE.inv.length?'لا توجد مركبات تطابق التصفية.':'المخزون فارغ. أضف أول مركبة بزر «إضافة مركبة».')+'</p>';
 }
 function chip0(st){const s=INVST[st]||INVST.available;return '<span class="chip '+s[1]+'">'+s[0]+'</span>'}
@@ -6801,14 +6929,20 @@ const GAS_TOKEN='';
 const GAS_DEFAULT='';
 function gasUrl(){try{return localStorage.getItem('sigma-gas-url')||GAS_DEFAULT}catch(e){return GAS_DEFAULT}}
 function gasToken(){try{return localStorage.getItem('sigma-gas-token')||GAS_TOKEN}catch(e){return GAS_TOKEN}}
+/* staff accounts: a device without the owner key signs in with a name and PIN and gets a session from the bridge */
+const AUTH=(()=>{try{return JSON.parse(localStorage.getItem('sigma-auth')||'null')}catch(e){return null}})();
+function isStaff(){try{return !gasToken()&&!!(AUTH&&AUTH.session)}catch(e){return false}} // safe before the bridge constants exist
+function myPerms(){return isStaff()?((AUTH.me||{}).perms||{}):{docs:Object.keys(DOCS),costs:true,edit:true,inv:true,settings:true}}
+function needLogin(){return !gasToken()&&!(AUTH&&AUTH.session)&&lsGet('sigma-join')==='1'&&!!gasUrl()}
 async function gas(body){
-  let r;try{r=await fetch(gasUrl(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({token:gasToken()},body))})}catch(e){throw {code:'gas_net'}}
+  let r;try{r=await fetch(gasUrl(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign(gasToken()?{token:gasToken()}:{session:AUTH&&AUTH.session},body))})}catch(e){throw {code:'gas_net'}}
   let j=null;try{j=await r.json()}catch(e){}
+  if(j&&!j.ok&&j.error==='auth'&&isStaff()){staffSignedOut('انتهت جلستك أو أُوقف حسابك. ادخل من جديد.');throw {code:'gas_err',message:'auth'}}
   if(!j||!j.ok)throw {code:'gas_err',message:j&&j.error};return j;
 }
-function driveBackend(){return mcpCap?'mcp':(isTop&&gasUrl()&&gasToken()?'gas':null)}
+function driveBackend(){return mcpCap?'mcp':(isTop&&gasUrl()&&(gasToken()||isStaff())?'gas':null)}
 const APP_URL='https://jernaasx-eng.github.io/sigma-app/';
-function syncOn(){return !cloud&&isTop&&!!gasUrl()&&!!gasToken()}
+function syncOn(){return !cloud&&isTop&&!!gasUrl()&&(!!gasToken()||isStaff())}
 function cfgTs(){return Number(lsGet('sigma-cfg-ts'))||0}
 let syncBusy=false,syncAgain=false;
 const recTs=x=>x?(x.saved||x.added||0):0;
@@ -6839,6 +6973,10 @@ async function syncNow(manual){
     (j.del||[]).forEach(d=>{if(d.c!=='deals'&&d.c!=='inv')return;const n=STORE[d.c].length;STORE[d.c]=STORE[d.c].filter(x=>!(x.id===d.id&&recTs(x)<=d.ts));if(STORE[d.c].length!==n)ch=true});
     const cf=(j.cfg||[])[0];
     if(cf&&cf.data&&cf.data.sellers&&(cf.saved||0)>cfgTs()&&!SQ.cfg.main){S.sellers=cf.data.sellers;if(Array.isArray(cf.data.staff))S.staff=cf.data.staff;if(cf.data.catPrice!=null)S.catPrice=!!cf.data.catPrice;if(cf.data.fsz)S.fsz=cf.data.fsz;if(cf.data.validDays)S.validDays=cf.data.validDays;lsSet('sigma-cfg-ts',String(cf.saved));migrate();sellerLoad();lastCfg=JSON.stringify(cfgData());cfgCh=true}
+    (j.restore||[]).forEach(x=>{if(!x||!x.r)return;if(x.c==='deals'||x.c==='inv'){upsert(STORE[x.c],x.r);ch=true;if(x.c==='deals'&&x.r.id===S.dealId)cur=x.r}
+      else if(x.c==='cfg'&&x.r.data&&x.r.data.sellers){S.sellers=x.r.data.sellers;S.company=S.sellers[S.seller]||S.sellers.sigma;lsSet('sigma-cfg-ts',String(x.r.saved||0));cfgCh=true}});
+    if((j.restore||[]).length)setStatus('بعض التعديلات لم تُحفظ لأنها خارج صلاحياتك، وأُعيدت كما هي.');
+    if(j.me&&isStaff()&&JSON.stringify(j.me)!==JSON.stringify(AUTH.me)){AUTH.me=j.me;try{localStorage.setItem('sigma-auth',JSON.stringify(AUTH))}catch(e){}applyRole();renderLog();renderInv()}
     sqSave();lsSet('sigma-sync-last',String(j.now||Date.now()));
     if(ch){['deals','inv'].forEach(c=>STORE[c].sort((a,b)=>recTs(b)-recTs(a)));persistLocal()}
     if(cur){Object.assign(S,JSON.parse(JSON.stringify(cur.data)));migrate()}
@@ -6882,6 +7020,9 @@ document.getElementById('pairApply').addEventListener('click',()=>{
   else{st.textContent='رمز الربط غير صحيح. انسخه كاملاً من جهازك الأول.';st.className='ai-status err'}
 });
 (function(){
+  const jn=location.hash.match(/join=([A-Za-z0-9_-]+)/);
+  if(jn){try{const u=decodeURIComponent(escape(atob(jn[1].replace(/-/g,'+').replace(/_/g,'/'))));if(/^https:\/\/script\.google\.com\//.test(u)&&!gasToken()){lsSet('sigma-gas-url',u);lsSet('sigma-join','1')}}catch(e){}
+    try{history.replaceState(null,'',location.pathname+location.search)}catch(e){location.hash=''}}
   const m=location.hash.match(/pair=(SG1\.[A-Za-z0-9_-]+)/);
   if(m){const ok=applyPair(m[1]);try{history.replaceState(null,'',location.pathname+location.search)}catch(e){location.hash=''}if(ok){location.reload();return}}
   syncPairUi();
@@ -6976,6 +7117,7 @@ if(!FROM_SEED){
   if(!FIRST_RUN&&!recent&&(S.client.name||S.client.nameEn||S.client.idNo||S.veh.make||S.veh.model||S.veh.vin||S.dealId)){newSaleReset();try{save()}catch(e){}}
   else if(FIRST_RUN){const n=S.nums;newSaleReset();S.nums=n}
 }
+try{applyRole()}catch(e){}
 try{const ab=document.getElementById('aiBox');ab.open=!document.getElementById('aiOn').hidden}catch(e){}
 wzCur='doc';fillEditor();render();
 (function(){let v='docs';try{v=localStorage.getItem('sigma-view')||'docs'}catch(e){}setView(['docs','log','inv'].includes(v)?v:'docs')})();
